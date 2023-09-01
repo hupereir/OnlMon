@@ -11,6 +11,7 @@
 
 #include <Event/Event.h>
 #include <Event/msg_profile.h>
+#include <Event/oncsSubConstants.h>
 
 #include <tpc/TpcMap.h> 
 
@@ -339,7 +340,22 @@ int TpcMon::process_event(Event *evt/* evt */)
   std::vector<int> store_ten; 
   std::vector<int> mean_and_stdev_vec;
 
-  for( int packet = 4000; packet < 4232; packet++) //packet 4000 or 4001 = Sec 00, packet 4230 or 4231 = Sec 23
+
+  // we check if we have legacy data and start with packet 4000
+  // the range for the TPC is really 4001...4032
+  // we assume we start properly at 4001, but check if not
+  
+  int firstpacket=4001;
+  if (evt->existPacket(4000))
+    {
+      Packet *p = evt->getPacket(4000);
+      if (p->getIdentifier() == IDTPCFEEV3 ) firstpacket = 4000;
+      delete p;
+    }
+  int lastpacket = firstpacket+232;
+
+  
+  for( int packet = firstpacket; packet < lastpacket; packet++) //packet 4001 or 4002 = Sec 00, packet 4231 or 4232 = Sec 23
   {
     Packet* p = evt->getPacket(packet);
     if (!p)
@@ -389,8 +405,13 @@ int TpcMon::process_event(Event *evt/* evt */)
         // clockwise FEE mapping
         //int FEE_map[26]={5, 6, 1, 3, 2, 12, 10, 11, 9, 8, 7, 1, 2, 4, 8, 7, 6, 5, 4, 3, 1, 3, 2, 4, 6, 5};
         int FEE_R[26]={2, 2, 1, 1, 1, 3, 3, 3, 3, 3, 3, 2, 2, 1, 2, 2, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3};
-        // conter clockwise FEE mapping (From Takao)
-        int FEE_map[26]={3, 2, 5, 3, 4, 0, 2, 1, 3, 4, 5, 7, 6, 2, 0, 1, 0, 1, 4, 5, 11, 9, 10, 8, 6, 7};
+        // counter clockwise FEE mapping (From Takao - DEPRECATED AS OF 08.29)
+        //int FEE_map[26]={3, 2, 5, 3, 4, 0, 2, 1, 3, 4, 5, 7, 6, 2, 0, 1, 0, 1, 4, 5, 11, 9, 10, 8, 6, 7};
+
+        // FEE mapping from Jin
+        int FEE_map[26]={4, 5, 0, 2, 1, 11, 9, 10, 8, 7, 6, 0, 1, 3, 7, 6, 5, 4, 3, 2, 0, 2, 1, 3, 5, 4};
+
+        
         //int pads_per_sector[3] = {96, 128, 192};
 
 
