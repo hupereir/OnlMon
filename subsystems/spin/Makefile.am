@@ -11,40 +11,38 @@ AM_CPPFLAGS = \
   -isystem$(ROOTSYS)/include
 
 lib_LTLIBRARIES = \
-  libonlzdcmon_client.la \
-  libonlzdcmon_server.la
+  libonlspinmon_client.la \
+  libonlspinmon_server.la
 
-libonlzdcmon_server_la_LIBADD = \
+libonlspinmon_server_la_LIBADD = \
   -L$(libdir) \
   -L$(ONLINE_MAIN)/lib \
   -lonlmonserver \
   -lonlmonutils \
-  -lcalo_io \
-  -lcalo_reco \
   -lonlmondb
 
-libonlzdcmon_client_la_LIBADD = \
+libonlspinmon_client_la_LIBADD = \
   -L$(libdir) \
   -L$(ONLINE_MAIN)/lib \
   -lonlmonclient \
   -lonlmondb
 
 
-zdcincludedir=$(pkgincludedir)/zdc
+spinincludedir=$(pkgincludedir)/spin
 
-zdcinclude_HEADERS = \
-  ZdcMon.h \
-  ZdcMonDraw.h
+spininclude_HEADERS = \
+  SpinMon.h \
+  SpinMonDraw.h
 
-libonlzdcmon_server_la_SOURCES = \
-  ZdcMon.cc
+libonlspinmon_server_la_SOURCES = \
+  SpinMon.cc
 
-libonlzdcmon_client_la_SOURCES = \
-  ZdcMonDraw.cc
+libonlspinmon_client_la_SOURCES = \
+  SpinMonDraw.cc
 
 bin_SCRIPTS = \
-  ZdcMonSetup.csh \
-  ZdcMonSetup.sh
+  SpinMonSetup.csh \
+  SpinMonSetup.sh
 
 noinst_PROGRAMS = \
   testexternals_server \
@@ -58,10 +56,10 @@ testexternals_client_SOURCES = \
   testexternals.cc
 
 testexternals_server_LDADD = \
-  libonlzdcmon_server.la
+  libonlspinmon_server.la
 
 testexternals_client_LDADD = \
-  libonlzdcmon_client.la
+  libonlspinmon_client.la
 
 testexternals.cc:
 	echo "//*** this is a generated file. Do not commit, do not edit" > $@

@@ -1,23 +1,22 @@
-#ifndef ZDC_ZDCMONDRAW_H
-#define ZDC_ZDCMONDRAW_H
+#ifndef SPIN_SPINMONDRAW_H
+#define SPIN_SPINMONDRAW_H
 
 #include <onlmon/OnlMonDraw.h>
 
 #include <string>  // for allocator, string
+#include <TH2.h>
 
 class OnlMonDB;
 class TCanvas;
 class TGraphErrors;
 class TPad;
-const int NUM_CANV = 2 + 1 + 1 + 1;
-const int NUM_PAD = 4 + 3 + 12 + 2;
 
-class ZdcMonDraw : public OnlMonDraw
+class SpinMonDraw : public OnlMonDraw
 {
  public:
-  ZdcMonDraw(const std::string &name);
+  SpinMonDraw(const std::string &name);
 
-  ~ZdcMonDraw() override {}
+  ~SpinMonDraw() override {}
 
   int Init() override;
   int Draw(const std::string &what = "ALL") override;
@@ -28,13 +27,9 @@ class ZdcMonDraw : public OnlMonDraw
   int MakeCanvas(const std::string &name);
   int DrawFirst(const std::string &what = "ALL");
   int DrawSecond(const std::string &what = "ALL");
-  int DrawSmdValues(const std::string &what = "ALL");
-  int DrawSmdNorthandSouth(const std::string &what = "ALL");
-  int DrawSmdXY(const std::string &what = "ALL");
-
-  TCanvas *TC[NUM_CANV] = {nullptr};
-  TPad *transparent[NUM_CANV] = {nullptr};
-  TPad *Pad[NUM_PAD] = {nullptr};
+  TCanvas *TC[2] = {nullptr};
+  TPad *transparent[2] = {nullptr};
+  TPad *Pad[19] = {nullptr};
 };
 
-#endif /* ZDC_ZDCMONDRAW_H */
+#endif /* SPIN_SPINMONDRAW_H */
