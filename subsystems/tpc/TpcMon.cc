@@ -49,7 +49,6 @@ TpcMon::TpcMon(const std::string &name)
   rollover_value = 0;
   current_BCOBIN = 0;
   M.setMapNames("AutoPad-R1-RevA.sch.ChannelMapping.csv", "AutoPad-R2-RevA-Pads.sch.ChannelMapping.csv", "AutoPad-R3-RevA.sch.ChannelMapping.csv");
-
   return;
 }
 
@@ -74,9 +73,6 @@ int TpcMon::Init()
   // use printf for stuff which should go the screen but not into the message
   // system (all couts are redirected)
   printf("doing the Init\n");
-  tpchist1 = new TH1F("tpcmon_hist1", "test 1d histo", 101, 0., 100.);
-  tpchist2 = new TH2F("tpcmon_hist2", "test 2d histo", 101, 0., 100., 101, 0., 100.);
-
   //TPC GEM Module Displays
   NorthSideADC = new TH2F("NorthSideADC" , "ADC Counts North Side", N_thBins, -TMath::Pi()/12. , 23.*TMath::Pi()/12. , N_rBins , rBin_edges );
   SouthSideADC = new TH2F("SouthSideADC" , "ADC Counts South Side", N_thBins, -TMath::Pi()/12. , 23.*TMath::Pi()/12. , N_rBins , rBin_edges );
@@ -182,6 +178,40 @@ int TpcMon::Init()
 
   //____________________________________________________________________//
 
+  //TPC 5 event "cluster" XY heat maps WEIGHTED
+  //NorthSideADC_clusterXY_R1 = new TH2F("NorthSideADC_clusterXY_R1" , "ADC Peaks North Side", N_phi_binx_XY_R1, -TMath::Pi(), TMath::Pi(), N_rBins_XY, r_bins);
+  NorthSideADC_clusterXY_R1_u5 = new TH2F("NorthSideADC_clusterXY_R1_u5" , "(ADC-Pedestal) > 5#sigma North Side", 400, -800, 800, 400, -800, 800);
+  NorthSideADC_clusterXY_R1_u5->SetXTitle("X [mm]");
+  NorthSideADC_clusterXY_R1_u5->SetYTitle("Y [mm]");
+
+  //NorthSideADC_clusterXY_R2 = new TH2F("NorthSideADC_clusterXY_R2" , "ADC Peaks North Side", N_phi_binx_XY_R2, -TMath::Pi(), TMath::Pi(), N_rBins_XY, r_bins);
+  NorthSideADC_clusterXY_R2_u5 = new TH2F("NorthSideADC_clusterXY_R2_u5" , "(ADC-Pedestal) > 5#sigma North Side", 400, -800, 800, 400, -800, 800);
+  NorthSideADC_clusterXY_R2_u5->SetXTitle("X [mm]");
+  NorthSideADC_clusterXY_R2_u5->SetYTitle("Y [mm]");
+
+  //NorthSideADC_clusterXY_R3 = new TH2F("NorthSideADC_clusterXY_R3" , "ADC Peaks North Side", N_phi_binx_XY_R3, -TMath::Pi(), TMath::Pi(), N_rBins_XY, r_bins);
+  NorthSideADC_clusterXY_R3_u5 = new TH2F("NorthSideADC_clusterXY_R3_u5" , "(ADC-Pedestal) > 5#sigma North Side", 400, -800, 800, 400, -800, 800);
+  NorthSideADC_clusterXY_R3_u5->SetXTitle("X [mm]");
+  NorthSideADC_clusterXY_R3_u5->SetYTitle("Y [mm]");
+
+  //SouthSideADC_clusterXY_R1 = new TH2F("SouthSideADC_clusterXY_R1" , "ADC Peaks South Side", N_phi_binx_XY_R1, -TMath::Pi(), TMath::Pi(), N_rBins_XY, r_bins);
+  SouthSideADC_clusterXY_R1_u5 = new TH2F("SouthSideADC_clusterXY_R1_u5" , "(ADC-Pedestal) > 5#sigma South Side", 400, -800, 800, 400, -800, 800);
+  SouthSideADC_clusterXY_R1_u5->SetXTitle("X [mm]");
+  SouthSideADC_clusterXY_R1_u5->SetYTitle("Y [mm]");
+
+  //SouthSideADC_clusterXY_R2 = new TH2F("SouthSideADC_clusterXY_R2" , "ADC Peaks South Side", N_phi_binx_XY_R2, -TMath::Pi(), TMath::Pi(), N_rBins_XY, r_bins);
+  SouthSideADC_clusterXY_R2_u5 = new TH2F("SouthSideADC_clusterXY_R2_u5" , "(ADC-Pedestal) > 5#sigma South Side", 400, -800, 800, 400, -800, 800);
+  SouthSideADC_clusterXY_R2_u5->SetXTitle("X [mm]");
+  SouthSideADC_clusterXY_R2_u5->SetYTitle("Y [mm]");
+
+  //SouthSideADC_clusterXY_R3 = new TH2F("SouthSideADC_clusterXY_R3" , "ADC Peaks South Side", N_phi_binx_XY_R3, -TMath::Pi(), TMath::Pi(), N_rBins_XY, r_bins);  
+  SouthSideADC_clusterXY_R3_u5 = new TH2F("SouthSideADC_clusterXY_R3_u5" , "(ADC-Pedestal) > 5#sigma South Side", 400, -800, 800, 400, -800, 800);
+  SouthSideADC_clusterXY_R3_u5->SetXTitle("X [mm]");
+  SouthSideADC_clusterXY_R3_u5->SetYTitle("Y [mm]");
+
+  //____________________________________________________________________//
+
+
   //TPC "cluster" ZY heat maps WEIGHTED
    NorthSideADC_clusterZY = new TH2F("NorthSideADC_clusterZY" , "(ADC-Pedestal) > 5#sigma North Side", 206, -1030, 1030, 400, -800, 800);
    SouthSideADC_clusterZY = new TH2F("SouthSideADC_clusterZY" , "(ADC-Pedestal) > 5#sigma South Side", 206, -1030, 1030, 400, -800, 800);
@@ -205,7 +235,13 @@ int TpcMon::Init()
   ADC_vs_SAMPLE -> SetXTitle(ADC_vs_SAMPLE_xaxis_str);
   ADC_vs_SAMPLE -> SetYTitle("ADC [ADU]");
 
-  // ADC vs Sample (small)
+  ADC_vs_SAMPLE -> GetXaxis() -> SetLabelSize(0.05);
+  ADC_vs_SAMPLE -> GetXaxis() -> SetTitleSize(0.05);
+  ADC_vs_SAMPLE -> GetYaxis() -> SetLabelSize(0.05);
+  ADC_vs_SAMPLE -> GetYaxis() -> SetTitleSize(0.05);
+  ADC_vs_SAMPLE -> GetYaxis() -> SetTitleOffset(1.0); 
+
+  // PEDEST SUB ADC vs Sample (small)
   char PEDEST_SUB_ADC_vs_SAMPLE_str[100];
   char PEDEST_SUB_ADC_vs_SAMPLE_xaxis_str[100];
   sprintf(PEDEST_SUB_ADC_vs_SAMPLE_str,"ADC Counts vs Sample: SECTOR %i",MonitorServerId());
@@ -213,6 +249,12 @@ int TpcMon::Init()
   PEDEST_SUB_ADC_vs_SAMPLE = new TH2F("PEDEST_SUB_ADC_vs_SAMPLE", PEDEST_SUB_ADC_vs_SAMPLE_str, 360, 0, 360, 281, -100, 1024);
   PEDEST_SUB_ADC_vs_SAMPLE -> SetXTitle(PEDEST_SUB_ADC_vs_SAMPLE_xaxis_str);
   PEDEST_SUB_ADC_vs_SAMPLE -> SetYTitle("ADC-ped. [ADU]");
+
+  PEDEST_SUB_ADC_vs_SAMPLE -> GetXaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE -> GetXaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE -> GetYaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE -> GetYaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE -> GetYaxis() -> SetTitleOffset(1.0); 
 
   // ADC vs Sample (small)
   char PEDEST_SUB_ADC_vs_SAMPLE_R1_str[100];
@@ -223,6 +265,12 @@ int TpcMon::Init()
   PEDEST_SUB_ADC_vs_SAMPLE_R1 -> SetXTitle(PEDEST_SUB_ADC_vs_SAMPLE_R1_xaxis_str);
   PEDEST_SUB_ADC_vs_SAMPLE_R1 -> SetYTitle("ADC-ped. [ADU]");
 
+  PEDEST_SUB_ADC_vs_SAMPLE_R1 -> GetXaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R1 -> GetXaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R1 -> GetYaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R1 -> GetYaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R1 -> GetYaxis() -> SetTitleOffset(1.0); 
+
   // ADC vs Sample (small)
   char PEDEST_SUB_ADC_vs_SAMPLE_R2_str[100];
   char PEDEST_SUB_ADC_vs_SAMPLE_R2_xaxis_str[100];
@@ -231,6 +279,12 @@ int TpcMon::Init()
   PEDEST_SUB_ADC_vs_SAMPLE_R2 = new TH2F("PEDEST_SUB_ADC_vs_SAMPLE_R2", PEDEST_SUB_ADC_vs_SAMPLE_R2_str, 360, 0, 360, 281, -100, 1024);
   PEDEST_SUB_ADC_vs_SAMPLE_R2 -> SetXTitle(PEDEST_SUB_ADC_vs_SAMPLE_R2_xaxis_str);
   PEDEST_SUB_ADC_vs_SAMPLE_R2 -> SetYTitle("ADC-ped. [ADU]");
+  
+  PEDEST_SUB_ADC_vs_SAMPLE_R2 -> GetXaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R2 -> GetXaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R2 -> GetYaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R2 -> GetYaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R2 -> GetYaxis() -> SetTitleOffset(1.0); 
 
   // ADC vs Sample (small)
   char PEDEST_SUB_ADC_vs_SAMPLE_R3_str[100];
@@ -241,6 +295,12 @@ int TpcMon::Init()
   PEDEST_SUB_ADC_vs_SAMPLE_R3 -> SetXTitle(PEDEST_SUB_ADC_vs_SAMPLE_R3_xaxis_str);
   PEDEST_SUB_ADC_vs_SAMPLE_R3 -> SetYTitle("ADC-ped. [ADU]");
 
+  PEDEST_SUB_ADC_vs_SAMPLE_R3 -> GetXaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R3 -> GetXaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R3 -> GetYaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R3 -> GetYaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_ADC_vs_SAMPLE_R1 -> GetYaxis() -> SetTitleOffset(1.0); 
+
   // ADC vs Sample (large)
   char ADC_vs_SAMPLE_large_str[100];
   char ADC_vs_SAMPLE_xaxis_large_str[100];
@@ -248,20 +308,51 @@ int TpcMon::Init()
   sprintf(ADC_vs_SAMPLE_xaxis_large_str,"Sector %i: ADC Time bin [1/20MHz]",MonitorServerId());
   ADC_vs_SAMPLE_large = new TH2F("ADC_vs_SAMPLE_large", ADC_vs_SAMPLE_large_str, 1080, 0, 1080, 256, 0, 1024);
   ADC_vs_SAMPLE_large -> SetXTitle(ADC_vs_SAMPLE_xaxis_large_str);
+
   ADC_vs_SAMPLE_large -> SetYTitle("ADC [ADU]");
+  ADC_vs_SAMPLE_large -> GetXaxis() -> SetLabelSize(0.05);
+  ADC_vs_SAMPLE_large -> GetXaxis() -> SetTitleSize(0.05);
+  ADC_vs_SAMPLE_large -> GetYaxis() -> SetLabelSize(0.05);
+  ADC_vs_SAMPLE_large -> GetYaxis() -> SetTitleSize(0.05);
+  ADC_vs_SAMPLE_large -> GetYaxis() -> SetTitleOffset(1.0); 
 
   // Sample size distribution 1D histogram
   char sample_size_title_str[100];
   sprintf(sample_size_title_str,"Distribution of Sample Sizes in Events: SECTOR %i",MonitorServerId());
-  sample_size_hist = new TH1F("sample_size_hist" , sample_size_title_str, 1030, 0.5, 1030.5);
+  sample_size_hist = new TH1F("sample_size_hist" , sample_size_title_str, 1500, 0.5, 1500.5);
   sample_size_hist->SetXTitle("sample size");
   sample_size_hist->SetYTitle("counts");
+
+  sample_size_hist -> GetXaxis() -> SetLabelSize(0.05);
+  sample_size_hist -> GetXaxis() -> SetTitleSize(0.05);
+  sample_size_hist -> GetYaxis() -> SetLabelSize(0.05);
+  sample_size_hist -> GetYaxis() -> SetTitleSize(0.05);
+  sample_size_hist -> GetYaxis() -> SetTitleOffset(1.0); 
+
+  // Stuck Channel 1D histogram
+  char stuck_channel_title_str[100];
+  sprintf(stuck_channel_title_str,"Stuck Channels per FEE in Events: Sector %i",MonitorServerId());
+  Stuck_Channels = new TH1F("Stuck_Channels",stuck_channel_title_str,26,-0.5,25.5);
+  Stuck_Channels->SetXTitle("FEE_NUM");
+  Stuck_Channels->SetYTitle("NUM_STUCK_CHANNELS");
+
+  Stuck_Channels -> GetXaxis() -> SetLabelSize(0.05);
+  Stuck_Channels -> GetXaxis() -> SetTitleSize(0.05);
+  Stuck_Channels -> GetYaxis() -> SetLabelSize(0.05);
+  Stuck_Channels -> GetYaxis() -> SetTitleSize(0.05);
+  Stuck_Channels -> GetYaxis() -> SetTitleOffset(1.0); 
 
   // entries vs FEE*8 + SAMPA Number
   Check_Sums = new TH1F("Check_Sums" , "Entries vs Fee*8 + SAMPA in Events",208,-0.5, 207.5);
   Check_Sums->SetXTitle("FEE_NUM*8 + SAMPA_ADRR");
   Check_Sums->SetYTitle("Entries");
   Check_Sums->Sumw2(kFALSE); //explicity turn off Sumw2 - we do not want it
+
+  Check_Sums -> GetXaxis() -> SetLabelSize(0.05);
+  Check_Sums -> GetXaxis() -> SetTitleSize(0.05);
+  Check_Sums -> GetYaxis() -> SetLabelSize(0.05);
+  Check_Sums -> GetYaxis() -> SetTitleSize(0.05);
+  Check_Sums -> GetYaxis() -> SetTitleOffset(1.0); 
 
   // checksum error vs FEE*8 + SAMPA Number
   char checksum_title_str[100];
@@ -270,6 +361,84 @@ int TpcMon::Init()
   Check_Sum_Error->SetXTitle("FEE_NUM*8 + SAMPA_ADDR");
   Check_Sum_Error->SetYTitle("Prob. Check. Sum. Err.");
   Check_Sum_Error->Sumw2(kFALSE); //explicity turn off Sumw2 - we do not want it
+
+  Check_Sum_Error -> GetXaxis() -> SetLabelSize(0.05);
+  Check_Sum_Error -> GetXaxis() -> SetTitleSize(0.05);
+  Check_Sum_Error -> GetYaxis() -> SetLabelSize(0.05);
+  Check_Sum_Error -> GetYaxis() -> SetTitleSize(0.05);
+  Check_Sum_Error -> GetYaxis() -> SetTitleOffset(1.0);
+ 
+  // number of nonZS channels - <number of channels in sampa with values != 65 K ADC> vs sampa number + (feeID * sampa number)
+  char num_nonZS_channels_title_str[100];
+  sprintf(num_nonZS_channels_title_str,"Number of non ZS Channels: # of samples in channel waveform != 65K vs SAMPA ID: SECTOR %i",MonitorServerId());  
+  // x-axis is channel phi, y-axis is channel layer, z axis is ADC weithing
+  Num_non_ZS_channels_vs_SAMPA = new TH2F("Num_non_ZS_channels_vs_SAMPA",num_nonZS_channels_title_str,208,-0.5,207.5,1324,-300.5,1023.5);
+  Num_non_ZS_channels_vs_SAMPA->SetXTitle("SAMPA ID: SAMPA # + (feeID * 8)");
+  Num_non_ZS_channels_vs_SAMPA->SetYTitle("# of Non-Zero Suppressed Samples in WF");
+
+  Num_non_ZS_channels_vs_SAMPA -> GetXaxis() -> SetLabelSize(0.05);
+  Num_non_ZS_channels_vs_SAMPA -> GetXaxis() -> SetTitleSize(0.05);
+  Num_non_ZS_channels_vs_SAMPA -> SetLabelSize(0.05);
+  Num_non_ZS_channels_vs_SAMPA -> GetYaxis() -> SetTitleSize(0.05);
+  Num_non_ZS_channels_vs_SAMPA -> GetYaxis() -> SetTitleOffset(1.0);
+
+  // # of times channels are in packet per RCDAQ event
+  char chans_in_packet_title_str[100];
+  sprintf(chans_in_packet_title_str,"Channel counts vs Channel in packets in  RCDAQ Events: SECTOR %i",MonitorServerId());  
+  Channels_in_Packet = new TH1F("Channels_in_Packet" , chans_in_packet_title_str, 6656, -0.5, 6655.5);
+  Channels_in_Packet->SetXTitle("(FEE # * 256) + chan. #");
+  Channels_in_Packet->SetYTitle("Counts / Packet in RCDAQ Event");
+  Channels_in_Packet->SetStats(0);
+
+  Channels_in_Packet -> GetXaxis() -> SetLabelSize(0.05);
+  Channels_in_Packet -> GetXaxis() -> SetTitleSize(0.05);
+  Channels_in_Packet -> GetYaxis() -> SetLabelSize(0.05);
+  Channels_in_Packet -> GetYaxis() -> SetTitleSize(0.05);
+  Channels_in_Packet -> GetYaxis() -> SetTitleOffset(1.0);  
+
+  // # of times channels could be in packet per RCDAQ event
+  char chans_always_title_str[100];
+  sprintf(chans_always_title_str,"Channel counts vs all channels (filled once per event w/ packets): SECTOR %i",MonitorServerId());  
+  Channels_Always = new TH1F("Channels_Always" , chans_always_title_str, 6656, -0.5, 6655.5);
+  Channels_Always->SetXTitle("(FEE # * 256) + chan. #");
+  Channels_Always->SetYTitle("Counts");
+  Channels_Always->SetStats(0);
+
+  Channels_Always -> GetXaxis() -> SetLabelSize(0.05);
+  Channels_Always -> GetXaxis() -> SetTitleSize(0.05);
+  Channels_Always -> GetYaxis() -> SetLabelSize(0.05);
+  Channels_Always -> GetYaxis() -> SetTitleSize(0.05);
+  Channels_Always -> GetYaxis() -> SetTitleOffset(1.0);
+
+  //ZS ADC vs Sample (small)
+  char ZS_ADC_vs_SAMPLE_str[100];
+  char ZS_ADC_vs_SAMPLE_xaxis_str[100];
+  sprintf(ZS_ADC_vs_SAMPLE_str,"ADC Counts vs Sample - Trigger QA: SECTOR %i",MonitorServerId());
+  sprintf(ZS_ADC_vs_SAMPLE_xaxis_str,"Sector %i: ADC Time bin [1/20MHz]",MonitorServerId());
+  ZS_Trigger_ADC_vs_Sample = new TH2F("ZS_Trigger_ADC_vs_Sample", ZS_ADC_vs_SAMPLE_str, 360, -0.5, 359.5, 1024, 0, 1024);
+  ZS_Trigger_ADC_vs_Sample -> SetXTitle(ZS_ADC_vs_SAMPLE_xaxis_str);
+  ZS_Trigger_ADC_vs_Sample -> SetYTitle("ADC [ADU]");
+
+  ZS_Trigger_ADC_vs_Sample -> GetXaxis() -> SetLabelSize(0.05);
+  ZS_Trigger_ADC_vs_Sample -> GetXaxis() -> SetTitleSize(0.05);
+  ZS_Trigger_ADC_vs_Sample -> GetYaxis() -> SetLabelSize(0.05);
+  ZS_Trigger_ADC_vs_Sample -> GetYaxis() -> SetTitleSize(0.05);
+  ZS_Trigger_ADC_vs_Sample -> GetYaxis() -> SetTitleOffset(1.0);
+
+  //First non-ZS ADC vs Sample (small)
+  char First_ADC_vs_First_Time_Bin_str[100];
+  char First_ADC_vs_First_Time_Bin_xaxis_str[100];
+  sprintf(First_ADC_vs_First_Time_Bin_str,"1st nonZS ADC vs 1st nonZS Sample Time: SECTOR %i",MonitorServerId());
+  sprintf(First_ADC_vs_First_Time_Bin_xaxis_str,"Sector %i: 1st non-ZS Time bin [1/20MHz]",MonitorServerId());
+  First_ADC_vs_First_Time_Bin = new TH2F("First_ADC_vs_First_Time_Bin", First_ADC_vs_First_Time_Bin_str, 360, -0.5, 359.5, 256, 0, 1024);
+  First_ADC_vs_First_Time_Bin -> SetXTitle(First_ADC_vs_First_Time_Bin_xaxis_str);
+  First_ADC_vs_First_Time_Bin -> SetYTitle("1st non-ZS ADC [ADU]");
+
+  First_ADC_vs_First_Time_Bin -> GetXaxis() -> SetLabelSize(0.05);
+  First_ADC_vs_First_Time_Bin -> GetXaxis() -> SetTitleSize(0.05);
+  First_ADC_vs_First_Time_Bin -> GetYaxis() -> SetLabelSize(0.05);
+  First_ADC_vs_First_Time_Bin -> GetYaxis() -> SetTitleSize(0.05);
+  First_ADC_vs_First_Time_Bin -> GetYaxis() -> SetTitleOffset(1.0);  
 
   // Max ADC per waveform dist for each module (R1, R2, R3)
   char MAXADC_str[100];
@@ -320,6 +489,22 @@ int TpcMon::Init()
   RAWADC_1D_R1->SetLineColor(2);
   PEDEST_SUB_1D_R1->SetLineColor(2);
 
+  MAXADC_1D_R1 -> GetXaxis() -> SetLabelSize(0.05);
+  MAXADC_1D_R1 -> GetXaxis() -> SetTitleSize(0.05);
+  MAXADC_1D_R1 -> GetYaxis() -> SetLabelSize(0.05);
+  MAXADC_1D_R1 -> GetYaxis() -> SetTitleSize(0.05);
+  MAXADC_1D_R1 -> GetYaxis() -> SetTitleOffset(1.0);
+  RAWADC_1D_R1 -> GetXaxis() -> SetLabelSize(0.05);
+  RAWADC_1D_R1 -> GetXaxis() -> SetTitleSize(0.05);
+  RAWADC_1D_R1 -> GetYaxis() -> SetLabelSize(0.05);
+  RAWADC_1D_R1 -> GetYaxis() -> SetTitleSize(0.05);
+  RAWADC_1D_R1 -> GetYaxis() -> SetTitleOffset(1.0); 
+  PEDEST_SUB_1D_R1 -> GetXaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_1D_R1 -> GetXaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_1D_R1 -> GetYaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_1D_R1 -> GetYaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_1D_R1 -> GetYaxis() -> SetTitleOffset(1.0);
+
   sprintf(RAWADC_1D_titlestr,"RAW ADC for Sector %i R2",MonitorServerId());
   sprintf(MAXADC_1D_titlestr,"MAX ADC for Sector %i R2",MonitorServerId());
   sprintf(SUBADC_1D_titlestr,"PEDEST_SUB RAW ADC for Sector %i R2`",MonitorServerId()); 
@@ -344,6 +529,22 @@ int TpcMon::Init()
   MAXADC_1D_R2->SetLineColor(3);
   RAWADC_1D_R2->SetLineColor(3);
   PEDEST_SUB_1D_R2->SetLineColor(3);
+ 
+  MAXADC_1D_R2 -> GetXaxis() -> SetLabelSize(0.05);
+  MAXADC_1D_R2 -> GetXaxis() -> SetTitleSize(0.05);
+  MAXADC_1D_R2 -> GetYaxis() -> SetLabelSize(0.05);
+  MAXADC_1D_R2 -> GetYaxis() -> SetTitleSize(0.05);
+  MAXADC_1D_R2 -> GetYaxis() -> SetTitleOffset(1.0);
+  RAWADC_1D_R2 -> GetXaxis() -> SetLabelSize(0.05);
+  RAWADC_1D_R2 -> GetXaxis() -> SetTitleSize(0.05);
+  RAWADC_1D_R2 -> GetYaxis() -> SetLabelSize(0.05);
+  RAWADC_1D_R2 -> GetYaxis() -> SetTitleSize(0.05);
+  RAWADC_1D_R2 -> GetYaxis() -> SetTitleOffset(1.0); 
+  PEDEST_SUB_1D_R2 -> GetXaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_1D_R2 -> GetXaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_1D_R2 -> GetYaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_1D_R2 -> GetYaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_1D_R2 -> GetYaxis() -> SetTitleOffset(1.0);
 
   sprintf(RAWADC_1D_titlestr,"RAW ADC for Sector %i R3",MonitorServerId());
   sprintf(MAXADC_1D_titlestr,"MAX ADC for Sector %i R3",MonitorServerId());
@@ -370,6 +571,21 @@ int TpcMon::Init()
   RAWADC_1D_R3->SetLineColor(4);
   PEDEST_SUB_1D_R3->SetLineColor(4);
 
+  MAXADC_1D_R3 -> GetXaxis() -> SetLabelSize(0.05);
+  MAXADC_1D_R3 -> GetXaxis() -> SetTitleSize(0.05);
+  MAXADC_1D_R3 -> GetYaxis() -> SetLabelSize(0.05);
+  MAXADC_1D_R3 -> GetYaxis() -> SetTitleSize(0.05);
+  MAXADC_1D_R3 -> GetYaxis() -> SetTitleOffset(1.0);
+  RAWADC_1D_R3 -> GetXaxis() -> SetLabelSize(0.05);
+  RAWADC_1D_R3 -> GetXaxis() -> SetTitleSize(0.05);
+  RAWADC_1D_R3 -> GetYaxis() -> SetLabelSize(0.05);
+  RAWADC_1D_R3 -> GetYaxis() -> SetTitleSize(0.05);
+  RAWADC_1D_R3 -> GetYaxis() -> SetTitleOffset(1.0); 
+  PEDEST_SUB_1D_R3 -> GetXaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_1D_R3 -> GetXaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_1D_R3 -> GetYaxis() -> SetLabelSize(0.05);
+  PEDEST_SUB_1D_R3 -> GetYaxis() -> SetTitleSize(0.05);
+  PEDEST_SUB_1D_R3 -> GetYaxis() -> SetTitleOffset(1.0);
   
   char Layer_ChannelPhi_ADC_weighted_title_str[256];
   sprintf(Layer_ChannelPhi_ADC_weighted_title_str,"Layer vs Channel Phi");  
@@ -386,13 +602,18 @@ int TpcMon::Init()
 
   OnlMonServer *se = OnlMonServer::instance();
   // register histograms with server otherwise client won't get them
-  se->registerHisto(this, tpchist1);  // uses the TH1->GetName() as key
-  se->registerHisto(this, tpchist2);
   se->registerHisto(this, NorthSideADC);
   se->registerHisto(this, SouthSideADC);
   se->registerHisto(this, sample_size_hist);
   se->registerHisto(this, Check_Sum_Error);
   se->registerHisto(this, Check_Sums);
+  se->registerHisto(this, Stuck_Channels);
+  se->registerHisto(this, Channels_in_Packet);
+  se->registerHisto(this, Channels_Always);
+  se->registerHisto(this, Channels_Always);
+  se->registerHisto(this, Num_non_ZS_channels_vs_SAMPA);
+  se->registerHisto(this, ZS_Trigger_ADC_vs_Sample);
+  se->registerHisto(this, First_ADC_vs_First_Time_Bin);
   se->registerHisto(this, ADC_vs_SAMPLE);
   se->registerHisto(this, PEDEST_SUB_ADC_vs_SAMPLE);
   se->registerHisto(this, PEDEST_SUB_ADC_vs_SAMPLE_R1);
@@ -434,6 +655,14 @@ int TpcMon::Init()
   se->registerHisto(this, SouthSideADC_clusterXY_R2_LASER);
   se->registerHisto(this, SouthSideADC_clusterXY_R3_LASER);
 
+  se->registerHisto(this, NorthSideADC_clusterXY_R1_u5);
+  se->registerHisto(this, NorthSideADC_clusterXY_R2_u5);
+  se->registerHisto(this, NorthSideADC_clusterXY_R3_u5);
+
+  se->registerHisto(this, SouthSideADC_clusterXY_R1_u5);
+  se->registerHisto(this, SouthSideADC_clusterXY_R2_u5);
+  se->registerHisto(this, SouthSideADC_clusterXY_R3_u5);
+
   se->registerHisto(this, NorthSideADC_clusterZY);
   se->registerHisto(this, SouthSideADC_clusterZY);
 
@@ -456,6 +685,8 @@ int TpcMon::BeginRun(const int /* runno */)
   starting_BCO = -1;
   rollover_value = 0;
   current_BCOBIN = 0;
+
+  
 
   return 0;
 }
@@ -500,7 +731,8 @@ int TpcMon::process_event(Event *evt/* evt */)
 
   NEvents_vs_EBDC->Fill(MonitorServerId());
   //std::cout<<"Event #"<< evtcnt <<std::endl;
-  
+
+  //  if( evtcnt >= 1200 ){ //evtcnt debug  
   for( int packet = firstpacket; packet < lastpacket; packet++) //packet 4001 or 4002 = Sec 00, packet 4231 or 4232 = Sec 23
   {
     Packet* p = evt->getPacket(packet);
@@ -517,6 +749,8 @@ int TpcMon::process_event(Event *evt/* evt */)
       //std::cout << "Hello Waveforms ! - There are " << nr_of_waveforms << " of you !" << std::endl;
 
       bool is_channel_stuck = 0;
+
+      for(int ci = 0; ci < 6656; ci++){ Channels_Always->Fill(ci);}
 
       for( int wf = 0; wf < nr_of_waveforms; wf++)
       {
@@ -541,8 +775,10 @@ int TpcMon::process_event(Event *evt/* evt */)
         int checksumError = p->iValue(wf, "CHECKSUMERROR");
         int channel = p->iValue(wf, "CHANNEL");
 
-        Check_Sums->Fill(fee*8 + sampaAddress); 
-        if( checksumError == 1){Check_Sum_Error->Fill(fee*8 + sampaAddress);}
+        Check_Sums->Fill(FEE_transform[fee]*8 + sampaAddress); 
+        if( checksumError == 1){Check_Sum_Error->Fill(FEE_transform[fee]*8 + sampaAddress);}
+
+        if( checksumError == 0){Channels_in_Packet->Fill(channel + (256*FEE_transform[fee]));}
 
         int nr_Samples = p->iValue(wf, "SAMPLES");
         sample_size_hist->Fill(nr_Samples);
@@ -598,6 +834,12 @@ int TpcMon::process_event(Event *evt/* evt */)
         //std::cout<<"Sector = "<< serverid <<" FEE = "<<fee<<" channel = "<<channel<<std::endl;
 
         int mid = floor(360/2); //get median sample from 0-360 (we are assuming the sample > 360 is not useful to us as of 05.01.24)
+        int num_of_nonZS_samples = 0; //start counter from 0
+
+        int tr_samp = 0;
+        int start_flag = 0;
+        int prev_sample = 65000;
+        int first_non_ZS_sample = 1;
 
         if( nr_Samples > 9)
         {
@@ -605,13 +847,25 @@ int TpcMon::process_event(Event *evt/* evt */)
           {
             is_channel_stuck = 1;
           }
+
           for( int si=0;si < nr_Samples; si++ ) //get pedestal and noise before hand
           {
+            if( (p->iValue(wf,si)) < 1025 && prev_sample > 64500) //start condition to record 
+            { 
+              start_flag = 1;
+              if(first_non_ZS_sample == 1){First_ADC_vs_First_Time_Bin->Fill(si,(p->iValue(wf,si)));first_non_ZS_sample = 0;} //this is the first sample, its all we want
+            } 
+            if( (p->iValue(wf,si)) > 64500 && prev_sample < 1025){ tr_samp = 0; start_flag = 0; prev_sample =  (p->iValue(wf,si)); }  // end condition to record
+            if( start_flag == 1){ ZS_Trigger_ADC_vs_Sample->Fill(tr_samp, p->iValue(wf,si)); tr_samp++; prev_sample = p->iValue(wf,si);} // record the ZS trigger histo if you should
+            
 	    if( (p->iValue(wf,si)) > 64500 && si > 359){ break; } //for new firmware/ZS mode - we don't entries w/ ADC > 65 K after 360, that's nonsense - per Jin's suggestion once you see this, BREAK out of loop
-            else if( (p->iValue(wf,si)) > 64500 ){ continue; }  //only use reasonable values to calculate median
-            median_and_stdev_vec.push_back(p->iValue(wf,si)); 
+            if( (p->iValue(wf,si)) > 64500 ){ continue; }  //only use reasonable values to calculate median
+            median_and_stdev_vec.push_back(p->iValue(wf,si));
+            num_of_nonZS_samples++; 
           }
         } //Compare 5 values to determine stuck !!
+
+        Num_non_ZS_channels_vs_SAMPA->Fill(sampaAddress + (8*FEE_transform[fee]),num_of_nonZS_samples);
 
         if( median_and_stdev_vec.size() == 0 ) // if all waveform values were 65 K
         { 
@@ -626,6 +880,15 @@ int TpcMon::process_event(Event *evt/* evt */)
 	//std::cout<<"pedestal = "<<result.first<<", RMS = "<<result.second<<" ADC, fee: "<<fee<<", channel: "<<channel<<", layer: "<<layer<<", phi: "<<phi<<", event num: "<<evtcnt<<std::endl;
         float pedestal = result.first; //average/pedestal -- based on MEDIAN OF ALL ENTRIES NOW, NOT MEAN OF FIRST 10 (02/12/24)
         float noise = result.second; //stdev - BASED ON REASONABLE SIGMA OF ENTRIES THAT ARE +/- 40 ADC WITHIN PEDESTAL
+
+        float rawnoise =  calculateRawStdDev(median_and_stdev_vec);
+
+        if(rawnoise==0. && median_and_stdev_vec.size() > 1 )
+        {
+          //for( int si=0;si < nr_Samples; si++ ){ std::cout<<"SAMPLE: "<<si<<", ADC: "<< p->iValue(wf,si) << std::endl; } 
+	  stuck_channel_count[channel][FEE_transform[fee]]++;  // if the RMS is 0, this channel must be stuck
+          if(stuck_channel_count[channel][FEE_transform[fee]] == 1){ Stuck_Channels->Fill(FEE_transform[fee]); } // only count # of unique channels in FEE that get stuck at least once
+        } 
 
         int wf_max = 0;
         int t_max = 0;
@@ -677,6 +940,8 @@ int TpcMon::process_event(Event *evt/* evt */)
             }
 
           }
+
+          //if( R < 290 ){std::cout<<"R = "<<R<<" mm, layer:" <<layer<<std::endl; ADC_vs_SAMPLE -> Fill(s, adc);}
 
           if( checksumError == 0 && is_channel_stuck == 0)
           {
@@ -733,6 +998,21 @@ int TpcMon::process_event(Event *evt/* evt */)
           else if(Module_ID(fee)==2){SouthSideADC_clusterXY_R3_LASER->Fill(R*cos(phi),R*sin(phi),pedest_sub_wf_max_laser_peak);} //Raw 1D for R3
         }
         //________________________________________________________________________________
+        //5 event displays
+        if( (serverid < 12 && (pedest_sub_wf_max) > std::max(5.0*noise,20.)) && layer != 0 )
+        {
+          if(Module_ID(fee)==0){NorthSideADC_clusterXY_R1_u5->Fill(R*cos(phi),R*sin(phi));} //Raw 1D for R1
+          else if(Module_ID(fee)==1){NorthSideADC_clusterXY_R2_u5->Fill(R*cos(phi),R*sin(phi));} //Raw 1D for R2
+          else if(Module_ID(fee)==2){NorthSideADC_clusterXY_R3_u5->Fill(R*cos(phi),R*sin(phi));} //Raw 1D for R3
+        }
+        if( (serverid >= 12 && (pedest_sub_wf_max) > std::max(5.0*noise,20.)) && layer != 0 )
+        {
+          if(Module_ID(fee)==0){SouthSideADC_clusterXY_R1_u5->Fill(R*cos(phi),R*sin(phi));} //Raw 1D for R1
+          else if(Module_ID(fee)==1){SouthSideADC_clusterXY_R2_u5->Fill(R*cos(phi),R*sin(phi));} //Raw 1D for R2
+          else if(Module_ID(fee)==2){SouthSideADC_clusterXY_R3_u5->Fill(R*cos(phi),R*sin(phi));} //Raw 1D for R3
+        }
+        //________________________________________________________________________________
+
 
         is_channel_stuck = 0; //reset after looping through waveform samples
 
@@ -748,17 +1028,29 @@ int TpcMon::process_event(Event *evt/* evt */)
     } // if packet exists
     //std::cout<<"MADE IT TO END OF PACKET LOOP, EVENT # "<<evtcnt<<std::endl;
   } //end of packet loop
-
+  //} //debug if evt >=1203
   evtcnt++;
+  if(evtcnt5 < 5) //increment 5 event counter for 5 events
+  { 
+    evtcnt5++;
+  }
+  else if(evtcnt5 >= 5) // reset to to 0 when get to event 5 (6th event starting from 0)
+  {
+    evtcnt5 = 0;
+    NorthSideADC_clusterXY_R1_u5->Reset();
+    NorthSideADC_clusterXY_R2_u5->Reset();
+    NorthSideADC_clusterXY_R3_u5->Reset();
+
+    SouthSideADC_clusterXY_R1_u5->Reset();
+    SouthSideADC_clusterXY_R2_u5->Reset();
+    SouthSideADC_clusterXY_R3_u5->Reset();    
+  }
 
   // get temporary pointers to histograms
   // one can do in principle directly se->getHisto("tpchist1")->Fill()
   // but the search in the histogram Map is somewhat expensive and slows
   // things down if you make more than one operation on a histogram
-  tpchist1->Fill((float) idummy);
-  tpchist2->Fill((float) idummy, (float) idummy, 1.);
-
-  //fill the TPC module displays
+ //fill the TPC module displays
   float r, theta;
 
   //dummy data
@@ -922,7 +1214,37 @@ std::pair<float, float> TpcMon::calculateMedianAndStdDev(const std::vector<int>&
     return std::make_pair(median, stdDev);
 }
 
+float TpcMon::calculateRawStdDev(const std::vector<int>& values) {
+   
+    float stdDev = 3; // default answer is 3 ADC if somehow you don't have anything in the values vector 
 
+    if(values.size() > 0 )
+    {   
+
+      //Calculate Mean of values
+      float sum = 0.0;
+      for (int value : values) 
+      {
+        sum += value;
+      }
+      float mean = sum / values.size();
+  
+      // Calculate RMS of selected values
+      float sumSquares = 0.0;
+  
+      // Calculate the standard deviation of values
+      for (int value : values)
+      {
+        float diff = value - mean;
+        sumSquares += std::pow(diff, 2);
+      }
+      float variance = sumSquares / values.size();
+      stdDev = std::sqrt(variance);
+
+    }
+    //std::cout<<"PED = "<< median << "ADC, NOISE = "<< stdDev <<" ADC"<<std::endl;
+    return stdDev;
+}
 
 int TpcMon::Reset()
 {

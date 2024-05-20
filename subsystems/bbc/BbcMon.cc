@@ -35,6 +35,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>  // for allocator, string, char_traits
 
@@ -69,23 +70,79 @@ int BbcMon::Init()
   bevt = new MbdEvent();
   _mbdgeom = new MbdGeomV1();
 
-  if (useGL1)
-  {
-    //erc = new eventReceiverClient("gl1daq");
-    erc = new eventReceiverClient("localhost");
-  }
-
-  /*
-  // read our calibrations from BbcMonData.dat
+  // read settings from BbcMonData.dat
   const char *bbccalib = getenv("BBCCALIB");
   if (!bbccalib)
   {
     std::cout << "BBCCALIB environment variable not set" << std::endl;
     exit(1);
   }
-  std::string gainfile = std::string(bbccalib) + "/" + "bbc_mip.calib";
-  Read_Charge_Calib( gainfile );
-  */
+  std::string configfname = std::string(bbccalib) + "/" + "BbcMonData.dat";
+  std::ifstream configfile(configfname);
+  if ( configfile.is_open() )
+  {
+    std::cout << "MBD: Reading " << configfname << std::endl;
+    std::string label;
+    uint64_t trigbit{0};
+    while ( configfile >> label >> std::hex >> trigbit >> std::dec )
+    {
+      if ( label == "MBDTRIG" )
+      {
+          mbdtrig = trigbit;
+      }
+      else if ( label == "MBDNS" )
+      {
+          mbdns = trigbit;
+      }
+      else if ( label == "MBDNSVTX10" )
+      {
+          mbdnsvtx10 = trigbit;
+      }
+      else if ( label == "MBDNSVTX30" )
+      {
+          mbdnsvtx30 = trigbit;
+      }
+      else if ( label == "MBDNSVTX60" )
+      {
+          mbdnsvtx60 = trigbit;
+      }
+      else if ( label == "ZDCNS" )
+      {
+          zdcns = trigbit;
+      }
+      else if ( label == "TRIGMASK" )
+      {
+          trigmask = trigbit;
+      }
+      else if ( label == "USEGL1" )
+      {
+          useGL1 = static_cast<int>(trigbit);
+      }
+
+      if ( label[0] != '#' && label[0] != '/' )
+      {
+        std::cout << "Using trigger " << label << " 0x" << std::hex << trigbit << std::dec << std::endl;
+      }
+    }
+
+    configfile.close();
+  }
+  else
+  {
+    std::cout << "MBD: ERROR, " << configfname << " not found" << std::endl;
+    exit(1);
+  }
+
+  // get gl1 event receiver
+  if ( useGL1==1 )
+  {
+    erc = new eventReceiverClient("gl1daq");
+  }
+  else if ( useGL1==2 )
+  {
+    std::cout << "Connecting to eventserver on localhost" << std::endl;
+    erc = new eventReceiverClient("localhost");
+  }
 
   // Book Histograms
 
@@ -100,7 +157,7 @@ int BbcMon::Init()
   bbc_tdc = new TH2F("bbc_tdc", "BBC Raw TDC Distribution",
                      nPMT_BBC, -.5, nPMT_BBC - .5,
                      BbcMonDefs::nBIN_TDC, 0, BbcMonDefs::tdc_max_overflow * BbcMonDefs::TDC_CONVERSION_FACTOR);
-  std::cout << "BBCTDC " << (uint64_t)bbc_tdc << std::endl;
+  //std::cout << "BBCTDC " << (uint64_t)bbc_tdc << std::endl;
 
   // TDC Overflow Deviation ----------------------------------------------
   bbc_tdc_overflow = new TH2F("bbc_tdc_overflow", "MBD TDC Overflow Deviation",
@@ -135,7 +192,8 @@ int BbcMon::Init()
 
   // Vertex Distributions --------------------------------------------------------
 
-  bbc_zvertex = new TH1F("bbc_zvertex", "MBD ZVertex (all trigs, wide)", 128, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
+  bbc_zvertex = new TH1F("bbc_zvertex", "MBD ZVertex, main trigger", 128, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
+  bbc_zvertex->Sumw2();
   bbc_zvertex->GetXaxis()->SetTitle("ZVertex [cm]");
   bbc_zvertex->GetYaxis()->SetTitle("Number of Event");
   bbc_zvertex->GetXaxis()->SetTitleSize(0.05);
@@ -145,19 +203,7 @@ int BbcMon::Init()
   bbc_zvertex->GetXaxis()->SetLabelSize(0.07);
   bbc_zvertex->GetXaxis()->SetTickSize(0.1);
 
-  bbc_zvertex_bbll1 = new TH1F("bbc_zvertex_bbll1", "MBD ZVertex (All triggers)",
-                               BbcMonDefs::zvtnbin, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
-  bbc_zvertex_bbll1->Sumw2();
-  bbc_zvertex_bbll1->GetXaxis()->SetTitle("ZVertex [cm]");
-  bbc_zvertex_bbll1->GetYaxis()->SetTitle("Number of Event");
-  bbc_zvertex_bbll1->GetXaxis()->SetTitleSize(0.05);
-  bbc_zvertex_bbll1->GetYaxis()->SetTitleSize(0.05);
-  bbc_zvertex_bbll1->GetXaxis()->SetTitleOffset(0.70);
-  bbc_zvertex_bbll1->GetYaxis()->SetTitleOffset(1.75);
-  bbc_zvertex_bbll1->GetXaxis()->SetLabelSize(0.05);
-  bbc_zvertex_bbll1->GetXaxis()->SetTickSize(0.1);
-
-  bbc_zvertex_short = new TH1F("bbc_zvertex_short", "MBD ZVertex (All triggers), short time scale",
+  bbc_zvertex_short = new TH1F("bbc_zvertex_short", "MBD ZVertex (NS, wide), short time scale",
                                BbcMonDefs::zvtnbin, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
   bbc_zvertex_short->Sumw2();
   bbc_zvertex_short->GetXaxis()->SetTitle("ZVertex [cm]");
@@ -166,6 +212,59 @@ int BbcMon::Init()
   bbc_zvertex_short->GetYaxis()->SetTitleSize(0.05);
   bbc_zvertex_short->GetXaxis()->SetTitleOffset(0.70);
   bbc_zvertex_short->GetYaxis()->SetTitleOffset(1.75);
+
+  bbc_zvertex_ns = new TH1F("bbc_zvertex_ns", "MBD zvertex_ns, main trigger", BbcMonDefs::zvtnbin, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
+  bbc_zvertex_ns->GetXaxis()->SetTitle("zvertex [cm]");
+  bbc_zvertex_ns->GetYaxis()->SetTitle("Number of Event");
+  bbc_zvertex_ns->GetXaxis()->SetTitleSize(0.05);
+  bbc_zvertex_ns->GetYaxis()->SetTitleSize(0.05);
+  bbc_zvertex_ns->GetXaxis()->SetTitleOffset(0.70);
+  bbc_zvertex_ns->GetYaxis()->SetTitleOffset(1.75);
+  bbc_zvertex_ns->GetXaxis()->SetLabelSize(0.07);
+  bbc_zvertex_ns->GetXaxis()->SetTickSize(0.1);
+
+  bbc_zvertex_10 = new TH1F("bbc_zvertex_10", "MBD ZVertex (|z|<10)",
+                             BbcMonDefs::zvtnbin, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
+  bbc_zvertex_10->GetXaxis()->SetTitle("ZVertex [cm]");
+  bbc_zvertex_10->GetYaxis()->SetTitle("Number of Event");
+  bbc_zvertex_10->GetXaxis()->SetTitleSize(0.05);
+  bbc_zvertex_10->GetYaxis()->SetTitleSize(0.05);
+  bbc_zvertex_10->GetXaxis()->SetTitleOffset(0.70);
+  bbc_zvertex_10->GetYaxis()->SetTitleOffset(1.75);
+  bbc_zvertex_10->GetXaxis()->SetLabelSize(0.05);
+  bbc_zvertex_10->GetXaxis()->SetTickSize(0.1);
+
+  bbc_zvertex_30 = new TH1F("bbc_zvertex_30", "MBD ZVertex (|z|<30)",
+                            BbcMonDefs::zvtnbin, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
+  bbc_zvertex_30->GetXaxis()->SetTitle("ZVertex [cm]");
+  bbc_zvertex_30->GetYaxis()->SetTitle("Number of Event");
+  bbc_zvertex_30->GetXaxis()->SetTitleSize(0.05);
+  bbc_zvertex_30->GetYaxis()->SetTitleSize(0.05);
+  bbc_zvertex_30->GetXaxis()->SetTitleOffset(0.70);
+  bbc_zvertex_30->GetYaxis()->SetTitleOffset(1.75);
+  bbc_zvertex_30->GetXaxis()->SetLabelSize(0.05);
+  bbc_zvertex_30->GetXaxis()->SetTickSize(0.1);
+
+  bbc_zvertex_60 = new TH1F("bbc_zvertex_60", "MBD ZVertex (|z|<60)",
+                            BbcMonDefs::zvtnbin, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
+  bbc_zvertex_60->GetXaxis()->SetTitle("ZVertex [cm]");
+  bbc_zvertex_60->GetYaxis()->SetTitle("Number of Event");
+  bbc_zvertex_60->GetXaxis()->SetTitleSize(0.05);
+  bbc_zvertex_60->GetYaxis()->SetTitleSize(0.05);
+  bbc_zvertex_60->GetXaxis()->SetTitleOffset(0.70);
+  bbc_zvertex_60->GetYaxis()->SetTitleOffset(1.75);
+  bbc_zvertex_60->GetXaxis()->SetLabelSize(0.05);
+  bbc_zvertex_60->GetXaxis()->SetTickSize(0.1);
+
+  bbc_zvertex_zdcns = new TH1F("bbc_zvertex_zdcns", "MBD zvertex, ZDCNS trig", BbcMonDefs::zvtnbin, BbcMonDefs::min_zvertex, BbcMonDefs::max_zvertex);
+  bbc_zvertex_zdcns->GetXaxis()->SetTitle("zvertex [cm]");
+  bbc_zvertex_zdcns->GetYaxis()->SetTitle("Number of Event");
+  bbc_zvertex_zdcns->GetXaxis()->SetTitleSize(0.05);
+  bbc_zvertex_zdcns->GetYaxis()->SetTitleSize(0.05);
+  bbc_zvertex_zdcns->GetXaxis()->SetTitleOffset(0.70);
+  bbc_zvertex_zdcns->GetYaxis()->SetTitleOffset(1.75);
+  bbc_zvertex_zdcns->GetXaxis()->SetLabelSize(0.07);
+  bbc_zvertex_zdcns->GetXaxis()->SetTickSize(0.1);
 
   f_zvtx = new TF1("f_zvtx", "gaus", -30., 30.);
   bbc_nevent_counter = new TH1F("bbc_nevent_counter",
@@ -322,7 +421,11 @@ int BbcMon::Init()
 
   se->registerHisto(this, bbc_tdc_armhittime);
   se->registerHisto(this, bbc_zvertex);
-  se->registerHisto(this, bbc_zvertex_bbll1);
+  se->registerHisto(this, bbc_zvertex_ns);
+  se->registerHisto(this, bbc_zvertex_10);
+  se->registerHisto(this, bbc_zvertex_30);
+  se->registerHisto(this, bbc_zvertex_60);
+  se->registerHisto(this, bbc_zvertex_zdcns);
   se->registerHisto(this, bbc_nevent_counter);
   se->registerHisto(this, bbc_tzero_zvtx);
   se->registerHisto(this, bbc_prescale_hist);
@@ -419,19 +522,31 @@ int BbcMon::process_event(Event *evt)
     return 0;
   }
 
+  delete p[0];
+  delete p[1];
+
   int f_evt = evt->getEvtSequence();
+  if ( f_evt%1000 == 0 && Verbosity() )
+  {
+    std::cout << "mbd evt " << f_evt << "\t" << useGL1 << std::endl;
+  }
 
   // Get Trigger Info
-  if (useGL1)
+  if ( useGL1 )
   {
+    triggervec = 0UL;
+    triginput = 0UL;
     Event *gl1Event = erc->getEvent(f_evt);
     if (gl1Event)
     {
+      //std::cout << "Found gl1event " << f_evt << std::endl;
       Packet* p_gl1 = gl1Event->getPacket(14001);
       if (p_gl1)
       {
-        gl1_bco = p_gl1->lValue(0,"BCO");
+        //gl1_bco = p_gl1->lValue(0,"BCO");
         triggervec = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerVector") );
+        triginput = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerInput") );
+        //std::cout << "trig " << std::hex << triggervec << std::dec << std::endl;
         for (int itrig = 0; itrig < 64; itrig++ )
         {
           uint64_t trigbit = 0x1UL << itrig;
@@ -446,16 +561,29 @@ int BbcMon::process_event(Event *evt)
       delete gl1Event;
     }
   }
+  else
+  {
+    // if we don't use GL1, set every trig bit true
+    triggervec = 0xffffffffffffffffUL;
+  }
 
   // calculate BBC
   bevt->Clear();
   bevt->SetRawData(evt,m_mbdpmts);
 
-  bevt->FillSampMaxCalib();
   if (bevt->calib_is_done() == 0)
   {
-    delete p[0];
-    delete p[1];
+    return 0;
+  }
+
+  // Skip if this doesn't have a relevant trigger
+  // (Can use any trigger for sampmax calib, in principle)
+  if ( (triggervec&trigmask) == 0UL )
+  {
+    if ( f_evt%1000 == 0 )
+    {
+      std::cout << "skipping " << f_evt << "\t" << std::hex << triggervec << std::dec << std::endl;
+    }
     return 0;
   }
 
@@ -478,13 +606,35 @@ int BbcMon::process_event(Event *evt)
   }
 
   // vertex and t0
-  bbc_zvertex->Fill(zvtx);
-  bbc_zvertex_bbll1->Fill(zvtx);
-  bbc_tzero_zvtx->Fill(zvtx, t0);
-  // should this be the mean hit time, not per ipmt?
-  // bbc_south_hittime->Fill( tq );
-  // bbc_north_hittime->Fill( tq );
+  if ( triggervec&mbdns )
+  {
+    bbc_zvertex_ns->Fill(zvtx);
+  }
+  if ( triginput&mbdnsvtx10 )
+  {
+    bbc_zvertex_10->Fill(zvtx);
+  }
+  if ( triginput&mbdnsvtx30 )
+  {
+    bbc_zvertex_30->Fill(zvtx);
+  }
+  if ( triginput&mbdnsvtx60 )
+  {
+    bbc_zvertex_60->Fill(zvtx);
+  }
+  if ( triggervec&zdcns )
+  {
+    bbc_zvertex_zdcns->Fill(zvtx);
+  }
 
+  // only process for primary mbd trigger
+  if ( (triggervec&mbdtrig) == 0 )
+  {
+    return 0;
+  }
+
+  bbc_zvertex->Fill(zvtx);
+  bbc_tzero_zvtx->Fill(zvtx, t0);
   bbc_zvertex_short->Fill(zvtx);
 
   int n_goodevt = bbc_nevent_counter->GetBinContent(2);
@@ -560,23 +710,24 @@ int BbcMon::process_event(Event *evt)
     }
 
     // hit map
-    float xcent = _mbdgeom->get_x(ipmt);
-    float ycent = _mbdgeom->get_y(ipmt);
-    int arm = _mbdgeom->get_arm(ipmt);
     float q = m_mbdpmts->get_pmt(ipmt)->get_q();
 
-    if (arm == 0)
+    if ( q>0. )
     {
-      bbc_south_hitmap->Fill(xcent, ycent, q);
-    }
-    else if (arm == 1)
-    {
-      bbc_north_hitmap->Fill(xcent, ycent, q);
+        float xcent = _mbdgeom->get_x(ipmt);
+        float ycent = _mbdgeom->get_y(ipmt);
+        int arm = _mbdgeom->get_arm(ipmt);
+        //std::cout << "q " << arm << "\t" << q << std::endl;
+        if (arm == 0)
+        {
+            bbc_south_hitmap->Fill(xcent, ycent, q);
+        }
+        else if (arm == 1)
+        {
+            bbc_north_hitmap->Fill(xcent, ycent, q);
+        }
     }
   }
-
-  delete p[0];
-  delete p[1];
 
   return 0;
 }
@@ -593,8 +744,12 @@ int BbcMon::Reset()
   bbc_tdc_armhittime->Reset();
   bbc_nevent_counter->Reset();
   bbc_zvertex->Reset();
-  bbc_zvertex_bbll1->Reset();
   bbc_zvertex_short->Reset();
+  bbc_zvertex_ns->Reset();
+  bbc_zvertex_10->Reset();
+  bbc_zvertex_30->Reset();
+  bbc_zvertex_60->Reset();
+  bbc_zvertex_zdcns->Reset();
   bbc_tzero_zvtx->Reset();
   bbc_avr_hittime->Reset();
   bbc_south_hittime->Reset();
