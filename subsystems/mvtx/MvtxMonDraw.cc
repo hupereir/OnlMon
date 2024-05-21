@@ -540,7 +540,7 @@ int MvtxMonDraw::DrawGeneral(const std::string & /* what */)
   Pad[padID]->Divide(4, 2);
   int returnCode = 0;
 
-  Pad[padID]->cd(4)->SetRightMargin(0.12);
+  Pad[padID]->cd(4)->SetRightMargin(0.2);
   Pad[padID]->cd(6)->SetLeftMargin(0.16);
   Pad[padID]->cd(6)->SetTopMargin(0.16);
   Pad[padID]->cd(6)->SetBottomMargin(0.14);
@@ -1272,7 +1272,7 @@ int MvtxMonDraw::DrawFHR(const std::string & /* what */)
   TH2D *mDeadChipPos[3][NFlx + 1] = {{nullptr}};
   //TH2D *mAliveChipPos[3][NFlx + 1] = {{nullptr}};
   // TH2D* mChipStaveOccupancy[3][NFlx];
-  TH1D *mOccupancyPlot[3][NFlx + 1] = {{nullptr}};
+  //TH1D *mOccupancyPlot[3][NFlx + 1] = {{nullptr}};
 
   TH2I *mErrorVsFeeid[NFlx + 1] = {nullptr};
   TH2Poly *mGeneralOccupancy[NFlx + 1] = {nullptr};
@@ -1307,7 +1307,6 @@ int MvtxMonDraw::DrawFHR(const std::string & /* what */)
       }
       //mAliveChipPos[mLayer][iFelix] = dynamic_cast<TH2D *>(cl->getHisto(Form("MVTXMON_%d", iFelix), Form("MVTXMON_Occupancy_Layer%d_Layer%dAliveChipPos", mLayer, mLayer)));
       // mChipStaveOccupancy[mLayer][iFelix] =  dynamic_cast<TH2D*>(cl->getHisto(Form("MVTXMON/Occupancy/Layer%d/Layer%dChipStaveC", mLayer, mLayer)));
-      mOccupancyPlot[mLayer][iFelix] = dynamic_cast<TH1D *>(cl->getHisto(Form("MVTXMON_%d", iFelix), Form("MVTXMON_Occupancy_Layer%dOccupancy_LOG", mLayer)));
 
       mChipStaveNoisy[mLayer][iFelix] = dynamic_cast<TH2D *>(cl->getHisto(Form("MVTXMON_%d", iFelix), Form("FHR_NoisyChipStave_Layer%d", mLayer)));
     }
@@ -1333,7 +1332,6 @@ int MvtxMonDraw::DrawFHR(const std::string & /* what */)
   {
     MergeServers<TH2D *>(mDeadChipPos[mLayer]);
     //MergeServers<TH2D *>(mAliveChipPos[mLayer]);
-    MergeServers<TH1D *>(mOccupancyPlot[mLayer]);
     MergeServers<TH2D *>(mChipStaveNoisy[mLayer]);
     if (mDeadChipPos[mLayer][NFlx])
     {
@@ -1404,9 +1402,9 @@ int MvtxMonDraw::DrawFHR(const std::string & /* what */)
   returnCode += PublishHistogram(Pad[padID], 2, mChipStaveNoisy[0][NFlx], "COLZ");
   returnCode += PublishHistogram(Pad[padID], 6, mChipStaveNoisy[1][NFlx], "COLZ");
   returnCode += PublishHistogram(Pad[padID], 10, mChipStaveNoisy[2][NFlx], "COLZ");
-  returnCode += PublishHistogram(Pad[padID], 3, mOccupancyPlot[0][NFlx]);
-  returnCode += PublishHistogram(Pad[padID], 7, mOccupancyPlot[1][NFlx]);
-  returnCode += PublishHistogram(Pad[padID], 11, mOccupancyPlot[2][NFlx]);
+  //returnCode += PublishHistogram(Pad[padID], 3, mOccupancyPlot[0][NFlx]);
+  //returnCode += PublishHistogram(Pad[padID], 7, mOccupancyPlot[1][NFlx]);
+  //returnCode += PublishHistogram(Pad[padID], 11, mOccupancyPlot[2][NFlx]);
 
   PublishHistogram(Pad[padID], 8, mvtxmon_EvtHitChip[NFlx]);
   PublishHistogram(Pad[padID], 12, mvtxmon_EvtHitDis[NFlx]);
@@ -1747,14 +1745,14 @@ std::vector<MvtxMonDraw::Quality> MvtxMonDraw::analyseForError(TH2Poly *lane, TH
         bincontent = lane->GetBinContent(ibin);
       }
       
-      if (bincontent /*hp[iflag][NFlx]->GetBinContent(ibin)*/ > maxbadchips / 9.)
+      if (bincontent /*hp[iflag][NFlx]->GetBinContent(ibin)*/ >= maxbadchips / 9.)
       {
         // std::cout<<"bad stave"<<std::endl;
         countStave++;
         result.at(ilayer) = Quality::Medium;
       }
     }
-    if (countStave > 0.25 * NStaves[ilayer])
+    if (countStave > 0.2 * NStaves[ilayer])
     {
       result.at(ilayer) = Quality::Bad;
     }
@@ -1791,7 +1789,7 @@ std::vector<MvtxMonDraw::Quality> MvtxMonDraw::analyseForError(TH2Poly *lane, TH
       avrs =+ binc;
     }
     if(strobes->GetNbinsX() > 0) avrs = avrs/strobes->GetNbinsX();
-    if(mins < 0.5*avrs || maxs > 0.5*avrs){
+    if(mins < 0.5*avrs || maxs > 1.5*avrs){
       result.at(4) = Quality::Medium;
     }
   }
