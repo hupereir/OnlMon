@@ -12,6 +12,7 @@ class TowerInfoContainer;
 class Event;
 class TH1;
 class TH2;
+class TProfile;
 class Packet;
 
 class ZdcMon : public OnlMon
@@ -50,15 +51,22 @@ class ZdcMon : public OnlMon
   TH1 *veto_NB = nullptr;
   TH1 *veto_SF = nullptr;
   TH1 *veto_SB = nullptr;
-  
+    
+    
+  TH1* h_waveform_timez = nullptr;
+  TH1* h_waveform_timess = nullptr;
+  TH1* h_waveform_timesn = nullptr;
+  TH1* h_waveform_timevs = nullptr;
+  TH1* h_waveform_timevn = nullptr;
+
   // //waveform
   TH2 *h_waveformZDC = nullptr;
   TH2 *h_waveformSMD_North = nullptr;
   TH2 *h_waveformSMD_South = nullptr;
   TH2 *h_waveformVeto_North = nullptr;
   TH2 *h_waveformVeto_South = nullptr;
-  TH2 *h_waveformAll = nullptr;
-    
+
+
   // smd
   // Individual Channels
   TH1 *smd_adc_n_hor_ind[8] = {nullptr};

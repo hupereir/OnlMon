@@ -9,9 +9,11 @@
 #include <TGraphErrors.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile.h>
 #include <TPad.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TStyle.h>
 #include <TText.h>
 #include <TLatex.h>
 #include <TLine.h>
@@ -256,58 +258,74 @@ int ZdcMonDraw::MakeCanvas(const std::string &name)
     transparent[6]->Draw();
     TC[6]->SetEditable(false);
   }
-
-  else if (name == "waveform")
+    
+  else if (name == "SmdMultiplicities")
   {
-    // xpos (-1) negative: do not draw menu bar
-    TC[7] = new TCanvas(name.c_str(), "ZDC Wave form", -xsize * 0.9, -ysize * 0.9, xsize * 0.9, ysize * 0.9);
-    // root is pathetic, whenever a new TCanvas is created root piles up
-    // 6kb worth of X11 events which need to be cleared with
-    // gSystem->ProcessEvents(), otherwise your process will grow and
-    // grow and grow but will not show a definitely lost memory leak
+    // xpos negative: do not draw menu bar
+    TC[7] = new TCanvas(name.c_str(), "EXPERT - Smd Multiplicities", -xsize / 2, -ysize / 2, xsize / 2, ysize / 2);
     gSystem->ProcessEvents();
-    Pad[55] = new TPad("zdc waveform", "who needs this?", 0.05, 0.65, 0.35, 0.95, 0);
-    Pad[56] = new TPad("smd north waveform", "who needs this?", 0.35, 0.65, 0.65, 0.95, 0);
-    Pad[57] = new TPad("smd south waveform", "who needs this?", 0.65, 0.65, 0.95, 0.95, 0);
-    Pad[58] = new TPad("veto north waveform", "who needs this?", 0.05, 0.35, 0.35, 0.65, 0);
-    Pad[59] = new TPad("veto south waveform", "who needs this?", 0.35, 0.35, 0.65, 0.65, 0);
-    Pad[60] = new TPad("all channels waveform", "who needs this?", 0.65, 0.35, 0.95, 0.65, 0);
+    Pad[55] = new TPad("smd_north_hor_hits", "smd_north_hor_hits", 0.05, 0.5, 0.5, 0.98, 0);
+    Pad[56] = new TPad("smd_north_ver_hits", "smd_north_ver_hits", 0.5, 0.5, 0.98, 0.98, 0);
+    Pad[57] = new TPad("smd_south_hor_hits", "smd_south_hor_hits", 0.05, 0.05, 0.5, 0.5, 0);
+    Pad[58] = new TPad("smd_south_ver_hits", "smd_south_ver_hits", 0.5, 0.05, 0.95, 0.5, 0);
 
     Pad[55]->Draw();
     Pad[56]->Draw();
     Pad[57]->Draw();
     Pad[58]->Draw();
-    Pad[59]->Draw();
-    Pad[60]->Draw();
-
-    // this one is used to plot the run number on the canvas
-    transparent[0] = new TPad("transparent0", "this does not show", 0, 0, 1, 1);
-    transparent[0]->SetFillStyle(4000);
-    transparent[0]->Draw();
-    TC[7]->SetEditable(false);
-  }
-
-  else if (name == "SmdMultiplicities")
-  {
-    // xpos negative: do not draw menu bar
-    TC[8] = new TCanvas(name.c_str(), "EXPERT - Smd Multiplicities", -xsize / 2, -ysize / 2, xsize / 2, ysize / 2);
-    gSystem->ProcessEvents();
-    Pad[61] = new TPad("smd_north_hor_hits", "smd_north_hor_hits", 0.05, 0.5, 0.5, 0.98, 0);
-    Pad[62] = new TPad("smd_north_ver_hits", "smd_north_ver_hits", 0.5, 0.5, 0.98, 0.98, 0);
-    Pad[63] = new TPad("smd_south_hor_hits", "smd_south_hor_hits", 0.05, 0.05, 0.5, 0.5, 0);
-    Pad[64] = new TPad("smd_south_ver_hits", "smd_south_ver_hits", 0.5, 0.05, 0.95, 0.5, 0);
-
-    Pad[61]->Draw();
-    Pad[62]->Draw();
-    Pad[63]->Draw();
-    Pad[64]->Draw();
 
     // this one is used to plot the run number on the canvas
     transparent[6] = new TPad("transparent1", "this does not show", 0, 0, 1, 1);
     transparent[6]->SetFillStyle(4000);
     transparent[6]->Draw();
+    TC[7]->SetEditable(false);
+  }
+
+  else if (name == "waveform")
+  {
+    // xpos (-1) negative: do not draw menu bar
+    TC[8] = new TCanvas(name.c_str(), "ZDC Wave form", -xsize * 0.9, -ysize * 0.9, xsize * 0.9, ysize * 0.9);
+    // root is pathetic, whenever a new TCanvas is created root piles up
+    // 6kb worth of X11 events which need to be cleared with
+    // gSystem->ProcessEvents(), otherwise your process will grow and
+    // grow and grow but will not show a definitely lost memory leak
+    gSystem->ProcessEvents();
+      
+    // float xshift = 0.04; 
+
+    Pad[59] = new TPad("zdcpad59", "who needs this?", 0.05, 0.5, 0.2, 0.9, 0);
+    Pad[60] = new TPad("zdcpad60", "who needs this?", 0.25, 0.5, 0.25+0.15, 0.9, 0);
+    Pad[61] = new TPad("zdcpad61", "who needs this?", 0.25+0.15+0.05, 0.5, 0.25+0.3+0.05, 0.9, 0);
+    Pad[62] = new TPad("zdcpad62", "who needs this?", 0.25+0.3+0.05+0.05, 0.5, 0.25+0.45+0.05+0.05, 0.9, 0);
+    Pad[63] = new TPad("zdcpad63", "who needs this?", 0.25+0.45+0.05+0.05+0.05, 0.5, 1, 0.9, 0);
+
+    
+    Pad[64] = new TPad("zdcpad64", "who needs this?", 0.05, 0.05, 0.2, 0.4, 0);
+    Pad[65] = new TPad("zdcpad65", "who needs this?", 0.25, 0.05, 0.25+0.15, 0.4, 0);
+    Pad[66] = new TPad("zdcpad66", "who needs this?", 0.25+0.15+0.05, 0.05, 0.25+0.3+0.05, 0.4, 0);
+    Pad[67] = new TPad("zdcpad67", "who needs this?", 0.25+0.3+0.05+0.05, 0.05, 0.25+0.45+0.05+0.05, 0.4, 0);
+    Pad[68] = new TPad("zdcpad68", "who needs this?", 0.25+0.45+0.05+0.05+0.05, 0.05, 1, 0.4, 0);
+      
+  
+    Pad[59]->Draw();
+    Pad[60]->Draw();
+    Pad[61]->Draw();
+    Pad[62]->Draw();
+    Pad[63]->Draw();
+    Pad[64]->Draw();
+    Pad[65]->Draw();
+    Pad[66]->Draw();
+    Pad[67]->Draw();
+    Pad[68]->Draw();
+
+    // this one is used to plot the run number on the canvas
+    transparent[0] = new TPad("transparent0", "this does not show", 0, 0, 1, 1);
+    transparent[0]->SetFillStyle(4000);
+    transparent[0]->Draw();
     TC[8]->SetEditable(false);
   }
+
+
 
   return 0;
 }
@@ -357,17 +375,19 @@ int ZdcMonDraw::Draw(const std::string &what)
     idraw++;
   }
 
+  if (what == "ALL" || what == "SMD_MULTIPLICITIES")
+  {
+     iret += DrawSmdMultiplicities(what);
+     idraw++;
+  }
+    
   if (what == "ALL" || what == "ZDC_WAVEFORM")
   {
     iret += DrawWaveForm(what);
     idraw++;
   }
     
-  if (what == "ALL" || what == "SMD_MULTIPLICITIES")
-  {
-    iret += DrawSmdMultiplicities(what);
-    idraw++;
-  }
+
 
   if (!idraw)
   {
@@ -1027,11 +1047,11 @@ int ZdcMonDraw::DrawSmdAdcNorthIndividual(const std::string & /* what */)
 int ZdcMonDraw::DrawSmdAdcSouthIndividual(const std::string & /* what */)
 {
     
-    TString smdsouthlabel[15] = {"SMDSH1 ADC","SMDSH2 ADC","SMDSH3 ADC","SMDSH4 ADC","SMDSH5 ADC","SMDSH6 ADC","SMDSH7 ADC", "SMDSH8 ADC","SMDSV1 ADC","SMDSV2 ADC","SMDSV3 ADC","SMDSV4 ADC","SMDSV5 ADC","SMDSV6 ADC", "SMDSV7 ADC"};
-    TLatex l[15];
+  TString smdsouthlabel[15] = {"SMDSH1 ADC","SMDSH2 ADC","SMDSH3 ADC","SMDSH4 ADC","SMDSH5 ADC","SMDSH6 ADC","SMDSH7 ADC", "SMDSH8 ADC","SMDSV1 ADC","SMDSV2 ADC","SMDSV3 ADC","SMDSV4 ADC","SMDSV5 ADC","SMDSV6 ADC", "SMDSV7 ADC"};
+  TLatex l[15];
     
-    int textsize = 18;
-    TString meantrunc[15];
+  int textsize = 18;
+  TString meantrunc[15];
     
   OnlMonClient *cl = OnlMonClient::instance();
 
@@ -1221,7 +1241,7 @@ int ZdcMonDraw::Drawveto(const std::string & /* what */)
     l[3].SetTextFont(43);
     l[3].SetTextSize(textsize);
     veto_SB->DrawCopy();
-     l[3].DrawLatex(0.15, 0.75, vnmame[3]);
+    l[3].DrawLatex(0.15, 0.75, vnmame[3]);
 
   }
 
@@ -1246,161 +1266,6 @@ int ZdcMonDraw::Drawveto(const std::string & /* what */)
   return 0;
 }
 
-int ZdcMonDraw::DrawWaveForm(const std::string & /* what */)
-{
-  OnlMonClient *cl = OnlMonClient::instance();
-  TH2 *h_waveformZDC = (TH2 *) cl->getHisto("ZDCMON_0", "h_waveformZDC");
-  TH2 *h_waveformSMD_North = (TH2 *) cl->getHisto("ZDCMON_0", "h_waveformSMD_North");
-  TH2 *h_waveformSMD_South = (TH2 *) cl->getHisto("ZDCMON_0", "h_waveformSMD_South");
-  TH2 *h_waveformVeto_North = (TH2 *) cl->getHisto("ZDCMON_0", "h_waveformVeto_North");
-  TH2 *h_waveformVeto_South = (TH2 *) cl->getHisto("ZDCMON_0", "h_waveformVeto_South");
-  TH2 *h_waveformAll = (TH2 *) cl->getHisto("ZDCMON_0", "h_waveformAll");
-
-  if (!gROOT->FindObject("waveform"))
-  {
-    MakeCanvas("waveform");
-  }
-  TC[7]->SetEditable(true);
-  TC[7]->Clear("D");
-  if (!h_waveformZDC)
-  {
-    DrawDeadServer(transparent[0]);
-    TC[7]->SetEditable(false);
-    if (isHtml())
-    {
-      delete TC[7];
-      TC[7] = nullptr;
-    }
-    return -1;
-  }
-    
-  TLine *t1 = new TLine(6,0.0,6,5000);
-  t1->SetLineWidth(3);
-  t1->SetLineStyle(1);
-  t1->SetLineColor(kRed);
-    
-  TLine *t2 = new TLine(9,0.0,9,5000);
-  t2->SetLineWidth(3);
-  t2->SetLineStyle(1);
-  t2->SetLineColor(kRed);
-    
-  TLine *t3 = new TLine(10,0.0,10, 20000);
-  t3->SetLineWidth(3);
-  t3->SetLineStyle(1);
-  t3->SetLineColor(kRed);
-    
-  TLine *t4 = new TLine(14,0.0,14,20000);
-  t4->SetLineWidth(3);
-  t4->SetLineStyle(1);
-  t4->SetLineColor(kRed);
-    
-  TLine *t5 = new TLine(7,0.0,7,20000);
-  t5->SetLineWidth(3);
-  t5->SetLineStyle(1);
-  t5->SetLineColor(kRed);
-    
-  TLine *t6 = new TLine(12,0.0,12,20000);
-  t6->SetLineWidth(3);
-  t6->SetLineStyle(1);
-  t6->SetLineColor(kRed);
-    
-  TLine *t7 = new TLine(6,0.0,6,20000);
-  t7->SetLineWidth(3);
-  t7->SetLineStyle(1);
-  t7->SetLineColor(kRed);
-
-  TLine *t8 = new TLine(9,0.0,9,20000);
-  t8->SetLineWidth(3);
-  t8->SetLineStyle(1);
-  t8->SetLineColor(kRed);
-    
-    
-  TLine *t9 = new TLine(7,0.0,7,20000);
-  t9->SetLineWidth(3);
-  t9->SetLineStyle(1);
-  t9->SetLineColor(kRed);
-
-  TLine *t10 = new TLine(12,0.0,12,20000);
-  t10->SetLineWidth(3);
-  t10->SetLineStyle(1);
-  t10->SetLineColor(kRed);
-    
-      
-  
-  Pad[55]->cd();
-  gPad->SetLogz();
-  h_waveformZDC->GetYaxis()->SetRangeUser(0, 5000);
-  h_waveformZDC->SetStats(0);
-  h_waveformZDC->SetXTitle("Sample Number");
-  h_waveformZDC->SetYTitle("Amplitude");
-  h_waveformZDC->DrawCopy("colz");
-  t1->Draw("same");
-  t2->Draw("same");
-    
-  Pad[56]->cd();
-  gPad->SetLogz();
-  h_waveformSMD_North->SetStats(0);
-  h_waveformSMD_North->SetXTitle("Sample Number");
-  h_waveformSMD_North->SetYTitle("Amplitude");
-  h_waveformSMD_North->DrawCopy("colz");
-  t3->Draw("same");
-  t4->Draw("same");
-    
-  Pad[57]->cd();
-  gPad->SetLogz();
-  h_waveformSMD_South->SetStats(0);
-  h_waveformSMD_South->SetXTitle("Sample Number");
-  h_waveformSMD_South->SetYTitle("Amplitude");
-  h_waveformSMD_South->DrawCopy("colz");
-  t5->Draw("same");
-  t6->Draw("same");
-    
-  Pad[58]->cd();
-  gPad->SetLogz();
-  h_waveformVeto_North->SetStats(0);
-  h_waveformVeto_North->SetXTitle("Sample Number");
-  h_waveformVeto_North->SetYTitle("Amplitude");
-  h_waveformVeto_North->DrawCopy("colz");
-  t7->Draw("same");
-  t8->Draw("same");
-    
-  Pad[59]->cd();
-  gPad->SetLogz();
-  h_waveformVeto_South->SetStats(0);
-  h_waveformVeto_South->SetXTitle("Sample Number");
-  h_waveformVeto_South->SetYTitle("Amplitude");
-  h_waveformVeto_South->DrawCopy("colz");
-  t9->Draw("same");
-  t10->Draw("same");
-    
-  Pad[60]->cd();
-  gPad->SetLogz();
-  h_waveformAll->SetStats(0);
-  h_waveformAll->SetXTitle("Sample Number");
-  h_waveformAll->SetYTitle("Amplitude");
-  h_waveformAll->DrawCopy("colz");
-
-  TText PrintRun;
-  PrintRun.SetTextFont(62);
-  PrintRun.SetTextSize(0.04);
-  PrintRun.SetNDC();          // set to normalized coordinates
-  PrintRun.SetTextAlign(23);  // center/top alignment
-  std::ostringstream runnostream;
-  std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
-  // fill run number and event time into string
-  runnostream << ThisName << "_1 Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
-  runstring = runnostream.str();
-  transparent[0]->cd();
-  PrintRun.DrawText(0.5, 1., runstring.c_str());
-  TC[7]->Update();
-  TC[7]->Show();
-  TC[7]->SetEditable(false);
-
-  return 0;
-}
-
 int ZdcMonDraw::DrawSmdMultiplicities(const std::string & /* what */)
 {
     
@@ -1419,9 +1284,9 @@ int ZdcMonDraw::DrawSmdMultiplicities(const std::string & /* what */)
     MakeCanvas("SmdMultiplicities");
   }
         
-    TC[8]->SetEditable(true);
-    TC[8]->Clear("D");
-    Pad[61]->cd();
+    TC[7]->SetEditable(true);
+    TC[7]->Clear("D");
+    Pad[55]->cd();
     if (smd_north_hor_hits)
     {
         l[0].SetNDC();
@@ -1437,7 +1302,7 @@ int ZdcMonDraw::DrawSmdMultiplicities(const std::string & /* what */)
     else
     {
       DrawDeadServer(transparent[6]);
-      TC[8]->SetEditable(false);
+      TC[7]->SetEditable(false);
       if (isHtml())
       {
         delete TC[8];
@@ -1446,7 +1311,7 @@ int ZdcMonDraw::DrawSmdMultiplicities(const std::string & /* what */)
       return -1;
     }
 
-    Pad[62]->cd();
+    Pad[56]->cd();
     gPad->SetLogy();
     if (smd_north_ver_hits)
     {
@@ -1460,7 +1325,7 @@ int ZdcMonDraw::DrawSmdMultiplicities(const std::string & /* what */)
       l[1].DrawLatex(0.15, 0.75, Mult[1]);
     }
     
-    Pad[63]->cd();
+    Pad[57]->cd();
     gPad->SetLogy();
     if (smd_south_hor_hits)
     {
@@ -1474,7 +1339,7 @@ int ZdcMonDraw::DrawSmdMultiplicities(const std::string & /* what */)
       l[2].DrawLatex(0.15, 0.75, Mult[2]);
     }
     
-    Pad[64]->cd();
+    Pad[58]->cd();
     gPad->SetLogy();
     if (smd_south_ver_hits)
     {
@@ -1504,12 +1369,673 @@ int ZdcMonDraw::DrawSmdMultiplicities(const std::string & /* what */)
   runstring = runnostream.str();
   transparent[6]->cd();
   PrintRun.DrawText(0.5, 1., runstring.c_str());
+  TC[7]->Update();
+  TC[7]->Show();
+  TC[7]->SetEditable(false);
+
+  return 0;
+}
+
+
+int ZdcMonDraw::DrawWaveForm(const std::string & /* what */)
+{
+
+  float offset = 1.7;
+  float lf = 0.16;
+
+ OnlMonClient *cl = OnlMonClient::instance();
+
+ TH2 *h_waveformZDC = (TH2F *) cl->getHisto("ZDCMON_0", "h_waveformZDC");
+ TH1F* h_waveform_timez = (TH1F*) cl->getHisto("ZDCMON_0", "h_waveform_timez");
+ TH2 *h_waveformSMD_North = (TH2F *) cl->getHisto("ZDCMON_0", "h_waveformSMD_North");
+ TH1F* h_waveform_timesn = (TH1F*) cl->getHisto("ZDCMON_0", "h_waveform_timesn");
+ TH2 *h_waveformSMD_South = (TH2F *) cl->getHisto("ZDCMON_0", "h_waveformSMD_South");
+ TH2 *h_waveformVeto_North = (TH2F *) cl->getHisto("ZDCMON_0", "h_waveformVeto_North");
+ TH2 *h_waveformVeto_South = (TH2F *) cl->getHisto("ZDCMON_0", "h_waveformVeto_South");
+ TH1F* h_waveform_timess = (TH1F*) cl->getHisto("ZDCMON_0", "h_waveform_timess");
+ TH1F* h_waveform_timevs = (TH1F*) cl->getHisto("ZDCMON_0", "h_waveform_timevs");
+ TH1F* h_waveform_timevn = (TH1F*) cl->getHisto("ZDCMON_0", "h_waveform_timevn");
+
+  if (!gROOT->FindObject("waveform"))
+  {
+    MakeCanvas("waveform");
+  }
+  TC[8]->SetEditable(true);
+  TC[8]->Clear("D");
+  if (!h_waveformZDC)
+  {
+    DrawDeadServer(transparent[0]);
+    TC[8]->SetEditable(false);
+    if (isHtml())
+    {
+      delete TC[8];
+      TC[8] = nullptr;
+    }
+    return -1;
+  }
+    
+  double x_min = 0.0;
+  double x_max = 0.0;
+  int n_bins = 0;
+  int n_points_in_range1 = 0;
+
+
+  float x1 = h_waveformZDC->ProfileX()->GetMaximum();
+  TProfile* profile_y;
+  profile_y  = h_waveformZDC->ProfileY();
+  profile_y->Rebin(5);
+  x_min = 100;
+  x_max = 7 * x1;
+    
+  n_bins = profile_y->GetNbinsX();
+  for (int i = 1; i <= n_bins; ++i) {
+  double bin_center = profile_y->GetBinCenter(i);
+  if (profile_y->GetBinContent(i) == 0)
+  {
+     continue;
+   }
+  if (bin_center >= x_min && bin_center <= x_max)
+  {
+      n_points_in_range1++;
+   }
+  }
+    
+    double* x_vals1 = new double[n_points_in_range1];
+    double* y_vals1 = new double[n_points_in_range1];
+
+    int point_index1 = 0;
+    for (int i = 1; i <= n_bins; ++i) {
+        double bin_center = profile_y->GetBinCenter(i);
+        if (profile_y->GetBinContent(i) == 0) {
+            continue;
+        }
+        if (bin_center >= x_min && bin_center <= x_max) {
+            y_vals1[point_index1] = bin_center;
+            x_vals1[point_index1] = profile_y->GetBinContent(i);
+            point_index1++;
+        }
+    }
+
+    
+  TLine *t1 = new TLine(6,0.0,6,x1*20);
+  t1->SetLineWidth(3);
+  t1->SetLineStyle(1);
+  t1->SetLineColor(kRed);
+    
+  TLine *t2 = new TLine(9,0.0,9,x1*20);
+  t2->SetLineWidth(3);
+  t2->SetLineStyle(1);
+  t2->SetLineColor(kRed);
+    
+  Pad[59]->cd();
+  gPad->SetLogz();
+  gPad->SetRightMargin(0.15);
+  gPad->SetLeftMargin(lf);
+
+  gStyle->SetTitleFontSize(0.08);
+  h_waveformZDC->GetYaxis()->SetRangeUser(0, x1 * 20);
+  h_waveformZDC->Draw("colz");
+
+  float tsize = 0.05;
+  h_waveformZDC->SetStats(0);
+  h_waveformZDC->GetXaxis()->SetNdivisions(510, kTRUE);
+  h_waveformZDC->GetXaxis()->SetRangeUser(0, 16);
+  h_waveformZDC->SetTitle("ZDC");
+  h_waveformZDC->SetYTitle("Waveform [ADC]");
+  h_waveformZDC->SetXTitle("Sample Number");
+  h_waveformZDC->GetXaxis()->SetLabelSize(tsize);
+  h_waveformZDC->GetYaxis()->SetLabelSize(tsize);
+  h_waveformZDC->GetXaxis()->SetTitleSize(tsize);
+  h_waveformZDC->GetYaxis()->SetTitleSize(tsize);
+  h_waveformZDC->GetYaxis()->SetTitleOffset(offset);
+  TGraph* graph = new TGraph(n_points_in_range1, x_vals1, y_vals1);
+  graph->SetMarkerStyle(20);
+  graph->SetMarkerSize(1);
+  graph->SetMarkerColor(1);
+  // graph->Draw("P same");
+  t1->Draw("same");
+  t2->Draw("same");
+    
+  Pad[64]->cd();
+  gPad->SetLeftMargin(lf);
+
+  gStyle->SetTitleFontSize(0.06);
+  h_waveform_timez->Draw("hist");
+  h_waveform_timez->SetTitle("");
+  // h_waveform_timez->GetXaxis()->CenterTitle();
+  h_waveform_timez->SetStats(0);
+  h_waveform_timez->GetXaxis()->SetNdivisions(510, kTRUE);
+  h_waveform_timez->GetXaxis()->SetRangeUser(0, 16);
+  h_waveform_timez->SetTitle("ZDC");
+  h_waveform_timez->GetYaxis()->SetTitle("Fraction of Towers");
+  h_waveform_timez->GetXaxis()->SetTitle("Sample Number");
+  h_waveform_timez->GetXaxis()->SetLabelSize(tsize);
+  h_waveform_timez->GetYaxis()->SetLabelSize(tsize);
+  h_waveform_timez->GetXaxis()->SetTitleSize(tsize);
+  h_waveform_timez->GetYaxis()->SetTitleSize(tsize);
+  h_waveform_timez->GetYaxis()->SetTitleOffset(offset);
+
+  h_waveform_timez->SetFillColorAlpha(kBlue, 0.1);
+  if(h_waveform_timez->GetEntries()){
+     h_waveform_timez->Scale(1. / h_waveform_timez->GetEntries());
+   }
+       
+  TLine *t11 = new TLine(6,0.0,6,h_waveform_timez->GetMaximum() * 1.05);
+  t11->SetLineWidth(3);
+  t11->SetLineStyle(1);
+  t11->SetLineColor(kRed);
+           
+  TLine *t22 = new TLine(9,0.0,9,h_waveform_timez->GetMaximum() * 1.05);
+  t22->SetLineWidth(3);
+  t22->SetLineStyle(1);
+  t22->SetLineColor(kRed);
+  t11->Draw("same");
+  t22->Draw("same");
+    
+
+  double x_min2 = 0.0;
+  double x_max2 = 0.0;
+  int n_bins2 = 0;
+  int n_points_in_range2 = 0;
+
+    
+  float x2 = h_waveformSMD_North->ProfileX()->GetMaximum();
+  TProfile* profile_y2 = h_waveformSMD_North->ProfileY();
+  profile_y2->Rebin(5);
+  x_min2 = 100;
+  x_max2 = 7 * x2;
+  n_bins2 = profile_y2->GetNbinsX();
+  for (int i = 1; i <= n_bins2; ++i) {
+  double bin_center = profile_y2->GetBinCenter(i);
+    if (profile_y2->GetBinContent(i) == 0)
+    {
+       continue;
+     }
+    if (bin_center >= x_min2 && bin_center <= x_max2)
+    {
+        n_points_in_range2++;
+     }
+    }
+      
+      double* x_vals2 = new double[n_points_in_range2];
+      double* y_vals2 = new double[n_points_in_range2];
+
+      int point_index2 = 0;
+      for (int i = 1; i <= n_bins2; ++i) {
+          double bin_center = profile_y2->GetBinCenter(i);
+          if (profile_y2->GetBinContent(i) == 0) {
+              continue;
+          }
+          if (bin_center >= x_min2 && bin_center <= x_max2) {
+              y_vals2[point_index2] = bin_center;
+              x_vals2[point_index2] = profile_y2->GetBinContent(i);
+              point_index2++;
+          }
+      }
+    
+    
+    TLine *t3 = new TLine(10,0.0,10,  x2 * 20);
+    t3->SetLineWidth(3);
+    t3->SetLineStyle(1);
+    t3->SetLineColor(kRed);
+      
+    TLine *t4 = new TLine(14,0.0,14, x2 * 20);
+    t4->SetLineWidth(3);
+    t4->SetLineStyle(1);
+    t4->SetLineColor(kRed);
+      
+    Pad[60]->cd();
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.15);
+    gPad->SetLeftMargin(lf);
+
+    gStyle->SetTitleFontSize(0.08);
+    h_waveformSMD_North->GetYaxis()->SetRangeUser(0, x2 * 20);
+    h_waveformSMD_North->Draw("colz");
+
+    h_waveformSMD_North->SetStats(0);
+    h_waveformSMD_North->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveformSMD_North->GetXaxis()->SetRangeUser(0, 16);
+    h_waveformSMD_North->SetTitle("SMD NORTH");
+    h_waveformSMD_North->SetXTitle("Sample Number");
+     h_waveformSMD_North->SetYTitle("Waveform [ADC]");
+    h_waveformSMD_North->GetXaxis()->SetLabelSize(tsize);
+    h_waveformSMD_North->GetYaxis()->SetLabelSize(tsize);
+    h_waveformSMD_North->GetXaxis()->SetTitleSize(tsize);
+    h_waveformSMD_North->GetYaxis()->SetTitleSize(tsize);
+    h_waveformSMD_North->GetYaxis()->SetTitleOffset(offset);
+    TGraph* graph2 = new TGraph(n_points_in_range2, x_vals2, y_vals2);
+    graph2->SetMarkerStyle(20);
+    graph2->SetMarkerSize(1);
+    graph2->SetMarkerColor(1);
+    // graph2->Draw("P same");
+    t3->Draw("same");
+    t4->Draw("same");
+      
+    Pad[65]->cd();
+    gPad->SetLeftMargin(lf);
+
+    gStyle->SetTitleFontSize(0.06);
+    h_waveform_timesn->Draw("hist");
+    h_waveform_timesn->SetTitle("");
+    // h_waveform_timesn->GetXaxis()->CenterTitle();
+    h_waveform_timesn->SetStats(0);
+    h_waveform_timesn->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveform_timesn->GetXaxis()->SetRangeUser(0, 16);
+    h_waveform_timesn->SetTitle("SMD NORTH");
+    h_waveform_timesn->GetXaxis()->SetTitle("Sample Number");
+    h_waveform_timesn->GetYaxis()->SetTitle("Fraction of towers");
+    h_waveform_timesn->GetXaxis()->SetLabelSize(tsize);
+    h_waveform_timesn->GetYaxis()->SetLabelSize(tsize);
+    h_waveform_timesn->GetXaxis()->SetTitleSize(tsize);
+    h_waveform_timesn->GetYaxis()->SetTitleSize(tsize);
+    h_waveform_timesn->GetYaxis()->SetTitleOffset(offset);
+
+
+    h_waveform_timesn->SetFillColorAlpha(kBlue, 0.1);
+    if(h_waveform_timesn->GetEntries()){
+        h_waveform_timesn->Scale(1. / h_waveform_timesn->GetEntries());
+     }
+    
+    TLine *t33 = new TLine(10,0.0,10, h_waveform_timesn->GetMaximum() * 1.05);
+    t33->SetLineWidth(3);
+    t33->SetLineStyle(1);
+    t33->SetLineColor(kRed);
+        
+    TLine *t44 = new TLine(14,0.0,14,h_waveform_timesn->GetMaximum() * 1.05);
+    t44->SetLineWidth(3);
+    t44->SetLineStyle(1);
+    t44->SetLineColor(kRed);
+    
+    t33->Draw("same");
+    t44->Draw("same");   
+
+
+
+  double x_min3 = 0.0;
+  double x_max3 = 0.0;
+  int n_bins3 = 0;
+  int n_points_in_range3 = 0;
+
+    
+  float x3 = h_waveformSMD_South->ProfileX()->GetMaximum();
+  TProfile* profile_y3 = h_waveformSMD_South->ProfileY();
+  profile_y3->Rebin(5);
+  x_min3 = 100;
+  x_max3 = 7 * x3;
+  n_bins3 = profile_y3->GetNbinsX();
+  for (int i = 1; i <= n_bins3; ++i) {
+  double bin_center = profile_y3->GetBinCenter(i);
+    if (profile_y3->GetBinContent(i) == 0)
+    {
+       continue;
+     }
+    if (bin_center >= x_min3 && bin_center <= x_max3)
+    {
+        n_points_in_range3++;
+     }
+    }
+      
+      double* x_vals3 = new double[n_points_in_range3];
+      double* y_vals3 = new double[n_points_in_range3];
+
+      int point_index3 = 0;
+      for (int i = 1; i <= n_bins3; ++i) {
+          double bin_center = profile_y3->GetBinCenter(i);
+          if (profile_y3->GetBinContent(i) == 0) {
+              continue;
+          }
+          if (bin_center >= x_min3 && bin_center <= x_max3) {
+              y_vals3[point_index3] = bin_center;
+              x_vals3[point_index3] = profile_y3->GetBinContent(i);
+              point_index3++;
+          }
+      }
+    
+    
+  TLine *t5 = new TLine(7,0.0,7, x3 * 20);
+  t5->SetLineWidth(3);
+  t5->SetLineStyle(1);
+  t5->SetLineColor(kRed);
+    
+  TLine *t6 = new TLine(12,0.0,12, x3 * 20);
+  t6->SetLineWidth(3);
+  t6->SetLineStyle(1);
+  t6->SetLineColor(kRed);
+      
+    Pad[61]->cd();
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.15);
+    gPad->SetLeftMargin(lf);
+
+    gStyle->SetTitleFontSize(0.08);
+    h_waveformSMD_South->GetYaxis()->SetRangeUser(0, x3 * 20);
+    h_waveformSMD_South->Draw("colz");
+
+    h_waveformSMD_South->SetStats(0);
+    h_waveformSMD_South->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveformSMD_South->GetXaxis()->SetRangeUser(0, 16);
+    h_waveformSMD_South->SetTitle("SMD SOUTH");
+    h_waveformSMD_South->SetXTitle("Sample Number");
+    h_waveformSMD_South->SetYTitle("Waveform [ADC]");
+    h_waveformSMD_South->GetXaxis()->SetLabelSize(tsize);
+    h_waveformSMD_South->GetYaxis()->SetLabelSize(tsize);
+    h_waveformSMD_South->GetXaxis()->SetTitleSize(tsize);
+    h_waveformSMD_South->GetYaxis()->SetTitleSize(tsize);
+    h_waveformSMD_South->GetYaxis()->SetTitleOffset(offset);
+
+  
+    TGraph* graph3 = new TGraph(n_points_in_range3, x_vals3, y_vals3);
+    graph3->SetMarkerStyle(20);
+    graph3->SetMarkerSize(1);
+    graph3->SetMarkerColor(1);
+    // graph3->Draw("P same");
+    t5->Draw("same");
+    t6->Draw("same");
+      
+    Pad[66]->cd();
+    gPad->SetLeftMargin(lf);
+
+    gStyle->SetTitleFontSize(0.06);
+    h_waveform_timess->Draw("hist");
+    h_waveform_timess->SetTitle("");
+    // h_waveform_timess->GetXaxis()->CenterTitle();
+    h_waveform_timess->SetStats(0);
+    h_waveform_timess->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveform_timess->GetXaxis()->SetRangeUser(0, 16);
+    h_waveform_timess->SetTitle("SMD SOUTH");
+    h_waveform_timess->GetXaxis()->SetTitle("Sample Number");
+    h_waveform_timess->GetYaxis()->SetTitle("Fraction of Towers");
+    h_waveform_timess->GetXaxis()->SetLabelSize(tsize);
+    h_waveform_timess->GetYaxis()->SetLabelSize(tsize);
+    h_waveform_timess->GetXaxis()->SetTitleSize(tsize);
+    h_waveform_timess->GetYaxis()->SetTitleSize(tsize);
+    h_waveform_timess->GetYaxis()->SetTitleOffset(offset);
+
+
+    h_waveform_timess->SetFillColorAlpha(kBlue, 0.1);
+    if(h_waveform_timess->GetEntries()){
+        h_waveform_timess->Scale(1. / h_waveform_timess->GetEntries());
+     }
+    
+  TLine *t55 = new TLine(7,0.0,7,h_waveform_timess->GetMaximum() * 1.05);
+  t55->SetLineWidth(3);
+  t55->SetLineStyle(1);
+  t55->SetLineColor(kRed);
+      
+  TLine *t66 = new TLine(12,0.0,12,h_waveform_timess->GetMaximum() * 1.05);
+  t66->SetLineWidth(3);
+  t66->SetLineStyle(1);
+  t66->SetLineColor(kRed);
+  t55->Draw("same");
+  t66->Draw("same");
+      
+
+
+
+  double x_min4 = 0.0;
+  double x_max4 = 0.0;
+  int n_bins4 = 0;
+  int n_points_in_range4 = 0;
+
+    
+  float x4 = h_waveformVeto_North->ProfileX()->GetMaximum();
+  TProfile* profile_y4 = h_waveformVeto_North->ProfileY();
+  profile_y4->Rebin(5);
+  x_min4 = 100;
+  x_max4 = 7 * x4;
+  n_bins4 = profile_y4->GetNbinsX();
+  for (int i = 1; i <= n_bins4; ++i) {
+  double bin_center = profile_y4->GetBinCenter(i);
+    if (profile_y4->GetBinContent(i) == 0)
+    {
+       continue;
+     }
+    if (bin_center >= x_min4 && bin_center <= x_max4)
+    {
+        n_points_in_range4++;
+     }
+    }
+      
+      double* x_vals4 = new double[n_points_in_range4];
+      double* y_vals4 = new double[n_points_in_range4];
+
+      int point_index4 = 0;
+      for (int i = 1; i <= n_bins4; ++i) {
+          double bin_center = profile_y4->GetBinCenter(i);
+          if (profile_y4->GetBinContent(i) == 0) {
+              continue;
+          }
+          if (bin_center >= x_min4 && bin_center <= x_max4) {
+              y_vals4[point_index4] = bin_center;
+              x_vals4[point_index4] = profile_y4->GetBinContent(i);
+              point_index4++;
+          }
+      }
+    
+    
+  TLine *t7 = new TLine(6,0.0,6, x4 * 20);
+  t7->SetLineWidth(3);
+  t7->SetLineStyle(1);
+  t7->SetLineColor(kRed);
+
+  TLine *t8 = new TLine(9,0.0,9, x4 * 20);
+  t8->SetLineWidth(3);
+  t8->SetLineStyle(1);
+  t8->SetLineColor(kRed);
+      
+    Pad[62]->cd();
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.15);
+    gPad->SetLeftMargin(lf);
+
+    gStyle->SetTitleFontSize(0.08);
+    h_waveformVeto_North->GetYaxis()->SetRangeUser(0, x4 * 20);
+    h_waveformVeto_North->Draw("colz");
+
+    h_waveformVeto_North->SetStats(0);
+    h_waveformVeto_North->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveformVeto_North->GetXaxis()->SetRangeUser(0, 16);
+    h_waveformVeto_North->SetTitle("VETO NORTH");
+    h_waveformVeto_North->SetXTitle("Sample Number");
+    h_waveformVeto_North->SetYTitle("Waveform [ADC]");
+    h_waveformVeto_North->GetXaxis()->SetLabelSize(tsize);
+    h_waveformVeto_North->GetYaxis()->SetLabelSize(tsize);
+    h_waveformVeto_North->GetXaxis()->SetTitleSize(tsize);
+    h_waveformVeto_North->GetYaxis()->SetTitleSize(tsize);
+    h_waveformVeto_North->GetYaxis()->SetTitleOffset(offset);
+
+ 
+    TGraph* graph4 = new TGraph(n_points_in_range4, x_vals4, y_vals4);
+    graph4->SetMarkerStyle(20);
+    graph4->SetMarkerSize(1);
+    graph4->SetMarkerColor(1);
+    // graph4->Draw("P same");
+    t7->Draw("same");
+    t8->Draw("same");
+      
+    Pad[67]->cd();
+    gPad->SetLeftMargin(lf);
+    gStyle->SetTitleFontSize(0.06);
+    h_waveform_timevn->Draw("hist");
+    h_waveform_timevn->SetTitle("");
+    // h_waveform_timevn->GetXaxis()->CenterTitle();
+    h_waveform_timevn->SetStats(0);
+    h_waveform_timevn->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveform_timevn->GetXaxis()->SetRangeUser(0, 16);
+    h_waveform_timevn->SetTitle("VETO NORTH");
+    h_waveform_timevn->GetXaxis()->SetTitle("Sample Number");
+    h_waveform_timevn->GetYaxis()->SetTitle("Fraction of Towers");
+    h_waveform_timevn->GetXaxis()->SetLabelSize(tsize);
+    h_waveform_timevn->GetYaxis()->SetLabelSize(tsize);
+    h_waveform_timevn->GetXaxis()->SetTitleSize(tsize);
+    h_waveform_timevn->GetYaxis()->SetTitleSize(tsize);
+    h_waveform_timevn->GetYaxis()->SetTitleOffset(offset);
+
+
+    h_waveform_timevn->SetFillColorAlpha(kBlue, 0.1);
+    if(h_waveform_timevn->GetEntries()){
+        h_waveform_timevn->Scale(1. / h_waveform_timevn->GetEntries());
+     }
+    
+
+
+  TLine *t77 = new TLine(6,0.0,6,h_waveform_timevn->GetMaximum() * 1.05);
+  t77->SetLineWidth(3);
+  t77->SetLineStyle(1);
+  t77->SetLineColor(kRed);
+
+  TLine *t88 = new TLine(9,0.0,9,h_waveform_timevn->GetMaximum() * 1.05);
+  t88->SetLineWidth(3);
+  t88->SetLineStyle(1);
+  t88->SetLineColor(kRed);
+
+  t77->Draw("same");
+  t88->Draw("same");
+
+
+
+
+  double x_min5 = 0.0;
+  double x_max5 = 0.0;
+  int n_bins5 = 0;
+  int n_points_in_range5 = 0;
+
+    
+  float x5 = h_waveformVeto_South->ProfileX()->GetMaximum();
+  TProfile* profile_y5 = h_waveformVeto_South->ProfileY();
+  profile_y5->Rebin(5);
+  x_min5 = 100;
+  x_max5 = 7 * x5;
+  n_bins5 = profile_y5->GetNbinsX();
+  for (int i = 1; i <= n_bins5; ++i) {
+  double bin_center = profile_y5->GetBinCenter(i);
+    if (profile_y5->GetBinContent(i) == 0)
+    {
+       continue;
+     }
+    if (bin_center >= x_min5 && bin_center <= x_max5)
+    {
+        n_points_in_range5++;
+     }
+    }
+      
+      double* x_vals5 = new double[n_points_in_range5];
+      double* y_vals5 = new double[n_points_in_range5];
+
+      int point_index5 = 0;
+      for (int i = 1; i <= n_bins5; ++i) {
+          double bin_center = profile_y5->GetBinCenter(i);
+          if (profile_y5->GetBinContent(i) == 0) {
+              continue;
+          }
+          if (bin_center >= x_min5 && bin_center <= x_max5) {
+              y_vals5[point_index5] = bin_center;
+              x_vals5[point_index5] = profile_y5->GetBinContent(i);
+              point_index5++;
+          }
+      }
+    
+
+  TLine *t9 = new TLine(7,0.0,7,x5 * 20);
+  t9->SetLineWidth(3);
+  t9->SetLineStyle(1);
+  t9->SetLineColor(kRed);
+
+  TLine *t10 = new TLine(12,0.0,12,x5 * 20);
+  t10->SetLineWidth(3);
+  t10->SetLineStyle(1);
+  t10->SetLineColor(kRed);
+
+      
+    Pad[63]->cd();
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.15);
+    gPad->SetLeftMargin(lf);
+
+    gStyle->SetTitleFontSize(0.08);
+    h_waveformVeto_South->GetYaxis()->SetRangeUser(0, x5 * 20);
+    h_waveformVeto_South->Draw("colz");
+
+    h_waveformVeto_South->SetStats(0);
+    h_waveformVeto_South->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveformVeto_South->GetXaxis()->SetRangeUser(0, 16);
+    h_waveformVeto_South->SetTitle("VETO SOUTH");
+    h_waveformVeto_South->SetXTitle("Sample Number");
+    h_waveformVeto_South->SetYTitle("Waveform [ADC]");
+    h_waveformVeto_South->GetXaxis()->SetLabelSize(tsize);
+    h_waveformVeto_South->GetYaxis()->SetLabelSize(tsize);
+    h_waveformVeto_South->GetXaxis()->SetTitleSize(tsize);
+    h_waveformVeto_South->GetYaxis()->SetTitleSize(tsize);
+    h_waveformVeto_South->GetYaxis()->SetTitleOffset(offset);
+
+
+    TGraph* graph5 = new TGraph(n_points_in_range5, x_vals5, y_vals5);
+    graph5->SetMarkerStyle(20);
+    graph5->SetMarkerSize(1);
+    graph5->SetMarkerColor(1);
+    // graph5->Draw("P same");
+    t9->Draw("same");
+    t10->Draw("same");
+      
+    Pad[68]->cd();
+    gPad->SetLeftMargin(lf);
+
+    gStyle->SetTitleFontSize(0.06);
+    h_waveform_timevs->Draw("hist");
+    h_waveform_timevs->SetTitle("");
+    // h_waveform_timevs->GetXaxis()->CenterTitle();
+    h_waveform_timevs->SetStats(0);
+    h_waveform_timevs->GetXaxis()->SetNdivisions(510, kTRUE);
+    h_waveform_timevs->GetXaxis()->SetRangeUser(0, 16);
+    h_waveform_timevs->SetTitle("VETO SOUTH");
+    h_waveform_timevs->GetXaxis()->SetTitle("Sample Number");
+    h_waveform_timevs->GetYaxis()->SetTitle("Fraction of Towers");
+    h_waveform_timevs->GetXaxis()->SetLabelSize(tsize);
+    h_waveform_timevs->GetYaxis()->SetLabelSize(tsize);
+    h_waveform_timevs->GetXaxis()->SetTitleSize(tsize);
+    h_waveform_timevs->GetYaxis()->SetTitleSize(tsize);
+    h_waveform_timevs->GetYaxis()->SetTitleOffset(offset);
+    h_waveform_timevs->SetFillColorAlpha(kBlue, 0.1);
+    if(h_waveform_timevs->GetEntries()){
+        h_waveform_timevs->Scale(1. / h_waveform_timevs->GetEntries());
+     }
+    
+
+  TLine *t99 = new TLine(7,0.0,7,h_waveform_timevs->GetMaximum() * 1.05);
+  t99->SetLineWidth(3);
+  t99->SetLineStyle(1);
+  t99->SetLineColor(kRed);
+
+  TLine *t100 = new TLine(12,0.0,12,h_waveform_timevs->GetMaximum() * 1.05);
+  t100->SetLineWidth(3);
+  t100->SetLineStyle(1);
+  t100->SetLineColor(kRed);
+  t99->Draw("same");
+  t100->Draw("same");
+
+ 
+  TText PrintRun;
+  PrintRun.SetTextFont(62);
+  PrintRun.SetTextSize(0.04);
+  PrintRun.SetNDC();          // set to normalized coordinates
+  PrintRun.SetTextAlign(23);  // center/top alignment
+  std::ostringstream runnostream;
+  std::string runstring;
+  time_t evttime = cl->EventTime("CURRENT");
+  // fill run number and event time into string
+  runnostream << ThisName << "_1 Run " << cl->RunNumber()
+              << ", Time: " << ctime(&evttime);
+  runstring = runnostream.str();
+  transparent[0]->cd();
+  PrintRun.DrawText(0.5, 1., runstring.c_str());
   TC[8]->Update();
   TC[8]->Show();
   TC[8]->SetEditable(false);
 
   return 0;
 }
+
 
 
 int ZdcMonDraw::SavePlot(const std::string &what, const std::string &type)
