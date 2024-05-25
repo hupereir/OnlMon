@@ -783,6 +783,8 @@ int TpotMonDraw::draw_counters()
 
   if( m_counters )
   {
+    m_counters->SetMinimum(0);
+
     cv->cd(1);
     gPad->SetLeftMargin( 0.07 );
     gPad->SetRightMargin( 0.15 );
@@ -896,6 +898,8 @@ int TpotMonDraw::draw_resist_occupancy()
     copy->GetXaxis()->SetTitleOffset(1);
     copy->GetYaxis()->SetTitleOffset(0.65);
     draw_detnames_sphenix( "Z" );
+
+    mask_scoz(0.1,0.4,0.18, 0.6);
 
     cv->cd(2);
     gPad->SetLeftMargin( 0.07 );
