@@ -94,14 +94,13 @@ namespace
   }
 
   // draw text in relative coordinate
-  TLatex* draw_text( Double_t x_ndc, Double_t y_ndc, const TString& value, double text_size = 0.1 )
+  void draw_text( Double_t x_ndc, Double_t y_ndc, const TString& value, double text_size = 0.1 )
   {
-    auto text = new TLatex;
-    text->SetNDC( true );
-    text->SetTextColor(1);
-    text->SetTextSize(text_size);
-    text->DrawLatex( x_ndc, y_ndc, value );
-    return text;
+    TLatex text;
+    text.SetNDC( true );
+    text.SetTextColor(1);
+    text.SetTextSize(text_size);
+    text.DrawLatex( x_ndc, y_ndc, value );
   }
 
   void mask_scoz( double xmin, double ymin, double xmax, double ymax )
@@ -1048,6 +1047,7 @@ int TpotMonDraw::draw_array( const std::string& name, const TpotMonDraw::histogr
       {
         copy = histograms[i]->DrawCopy( "col" );
       } else {
+
         histograms[i]->SetFillStyle(1001);
         histograms[i]->SetFillColor(kYellow );
         copy = histograms[i]->DrawCopy( "h" );
@@ -1058,8 +1058,8 @@ int TpotMonDraw::draw_array( const std::string& name, const TpotMonDraw::histogr
         copy->SetTitle("");
         copy->SetStats(false);
         copy->GetXaxis()->SetTitleOffset(1.);
-        copy->GetXaxis()->SetTitleSize( 0.08 );
-        copy->GetXaxis()->SetLabelSize( 0.08 );
+        copy->GetXaxis()->SetTitleSize( i==12 ? 0.075:0.08 );
+        copy->GetXaxis()->SetLabelSize( i==12 ? 0.075:0.08 );
 
         copy->GetYaxis()->SetTitleOffset( i<12 ? 1.4:1.6);
         copy->GetYaxis()->SetTitleSize( i<12 ? 0.08:0.07 );
@@ -1111,7 +1111,7 @@ int TpotMonDraw::draw_array( const std::string& name, const TpotMonDraw::histogr
       { gPad->SetLogz( true ); }
 
       // draw detector name
-      draw_text( 0.7, 0.9, m_detnames_sphenix[i].c_str() );
+      draw_text( 0.7, 0.9, m_detnames_sphenix[i].c_str(), (i%4) ? 0.1:0.094 );
       drawn = true;
     }
   }
