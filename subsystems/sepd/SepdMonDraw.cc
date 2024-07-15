@@ -34,14 +34,15 @@ int SepdMonDraw::Init()
 
 int SepdMonDraw::MakeCanvas(const std::string &name)
 {
-  OnlMonClient *cl = OnlMonClient::instance();
-  int xsize = cl->GetDisplaySizeX();
-  int ysize = cl->GetDisplaySizeY();
+  //OnlMonClient *cl = OnlMonClient::instance();
+  //int xsize = cl->GetDisplaySizeX();
+  //int ysize = cl->GetDisplaySizeY();
   if (name == "SepdMon1")
   {
     // --- this is called by int DrawFirst(string&)
     // xpos (-1) negative: do not draw menu bar
-    TC[0] = new TCanvas(name.c_str(), "sEPD Monitor 1 - UNDER CONSTRUCTION - Hits/Event vs Tile", -1, 0, 1200, 600);
+    //TC[0] = new TCanvas(name.c_str(), "sEPD Monitor 1 - UNDER CONSTRUCTION - Hits/Event vs Tile", -1, 0, 1200, 600);
+    TC[0] = new TCanvas(name.c_str(), "sEPD Monitor 1 - Hits/Event vs Tile", -1, 0, 1200, 600);
     // root is pathetic, whenever a new TCanvas is created root piles up
     // 6kb worth of X11 events which need to be cleared with
     // gSystem->ProcessEvents(), otherwise your process will grow and
@@ -100,7 +101,8 @@ int SepdMonDraw::MakeCanvas(const std::string &name)
   }
   else if (name == "SepdMon4")
   {
-    TC[3] = new TCanvas(name.c_str(), "sEPD Monitor 4 - Waveform Info", -1, 0, xsize / 3, ysize);
+    //TC[3] = new TCanvas(name.c_str(), "sEPD Monitor 4 - Waveform Info", -1, 0, xsize / 3, ysize);
+    TC[3] = new TCanvas(name.c_str(), "sEPD Monitor 4 - Waveform Info", -1, 0, 650, 850);
     gSystem->ProcessEvents();
     Pad[6] = new TPad("sepdpad6", "ADC vs sample #", 0.0, 0.6, 1.0, 0.95, 0);
     Pad[7] = new TPad("sepdpad7", "counts vs sample #", 0.0, 0.3, 1.0, 0.6, 0);
@@ -117,7 +119,8 @@ int SepdMonDraw::MakeCanvas(const std::string &name)
   else if (name == "SepdMon5")
   {
     // xpos negative: do not draw menu bar
-    TC[4] = new TCanvas(name.c_str(), "sEPD Monitor 5 - Packet Information", -1, 0, xsize / 3, ysize);
+    //TC[4] = new TCanvas(name.c_str(), "sEPD Monitor 5 - Packet Information", -1, 0, xsize / 3, ysize);
+    TC[4] = new TCanvas(name.c_str(), "sEPD Monitor 5 - Packet Information", -1, 0, 1200, 850);
     gSystem->ProcessEvents();
     Pad[10] = new TPad("sepdpad10", "packet event check", 0.0, 0.6, 1.0 / 2, 0.95, 0);
     Pad[11] = new TPad("sepdpad11", "packet size", 0.0, 0.3, 1.0 / 2, 0.6, 0);
@@ -196,8 +199,7 @@ int SepdMonDraw::DrawFirst(const std::string & /* what */)
   //TH1D *h_ADC_all_channel = (TH1D *) cl->getHisto("SEPDMON_0", "h_ADC_all_channel");
   TH1D *h_hits_all_channel = (TH1D *) cl->getHisto("SEPDMON_0", "h_hits_all_channel");
   TH1 *h_event = (TH1*)cl->getHisto("SEPDMON_0", "h_event");
-  time_t evttime = cl->EventTime("CURRENT");
-
+  std::pair<time_t, int> evttime = cl->EventTime("CURRENT");
   if (!gROOT->FindObject("SepdMon1"))
   {
     MakeCanvas("SepdMon1");
@@ -267,7 +269,8 @@ int SepdMonDraw::DrawFirst(const std::string & /* what */)
 
   // --- may need to update these depending on whether there are "hot" tiles
   double zmin = 0.0;
-  double zmax = 1.0;
+  double zmax = 0.1;
+  //double zmax = 1.0;
   //double zmax = 300;
   //double zmax = 1.1*h_ADC_all_channel->GetMaximum();
 
@@ -312,10 +315,12 @@ int SepdMonDraw::DrawFirst(const std::string & /* what */)
   std::ostringstream runnostream;
   std::string runstring;
   // fill run number and event time into string
-  runnostream << "UNDER CONSTRUCTION " << ThisName << "_1 Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+  //runnostream << "UNDER CONSTRUCTION " << ThisName << "_1 Run " << cl->RunNumber()
+  runnostream << ThisName << "_1 Run " << cl->RunNumber()
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   transparent[0]->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 1., runstring.c_str());
   TC[0]->Update();
   TC[0]->Show();
@@ -337,7 +342,7 @@ int SepdMonDraw::DrawSecond(const std::string & /* what */)
 
   TH1 *h_event = cl->getHisto("SEPDMON_0", "h_event");
   int nevt = h_event->GetEntries();
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
 
   if (!gROOT->FindObject("SepdMon2"))
   {
@@ -411,9 +416,10 @@ int SepdMonDraw::DrawSecond(const std::string & /* what */)
   std::string runstring;
   // fill run number and event time into string
   runnostream << "EXPERT ONLY " << ThisName << "_2 Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   transparent[1]->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 1., runstring.c_str());
   TC[1]->Update();
   TC[1]->Show();
@@ -431,7 +437,7 @@ int SepdMonDraw::DrawThird(const std::string & /* what */)
 
   TH2 *h_ADC_corr = (TH2 *) cl->getHisto("SEPDMON_0", "h_ADC_corr");
   TH2 *h_hits_corr = (TH2 *) cl->getHisto("SEPDMON_0", "h_hits_corr");
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   if (!gROOT->FindObject("SepdMon3"))
   {
     MakeCanvas("SepdMon3");
@@ -487,9 +493,10 @@ int SepdMonDraw::DrawThird(const std::string & /* what */)
   std::string runstring;
   // fill run number and event time into string
   runnostream << ThisName << "_2 Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   transparent[1]->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 1., runstring.c_str());
   TC[2]->Update();
   TC[2]->Show();
@@ -579,12 +586,13 @@ int SepdMonDraw::DrawFourth(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = getTime();
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << ": Pulse fitting, Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   transparent[3]->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.99, runstring.c_str());
 
   Pad[7]->cd();
@@ -756,10 +764,10 @@ int SepdMonDraw::DrawFifth(const std::string & /* what */)
   h1_packet_number->GetXaxis()->SetTitle("Packet #");
   h1_packet_number->GetYaxis()->SetTitle("% Of Events Present");
   // the sizing is funny on this pad...
-  h1_packet_number->GetXaxis()->SetLabelSize(tsize/1.2);
-  h1_packet_number->GetYaxis()->SetLabelSize(tsize/1.2);
-  h1_packet_number->GetXaxis()->SetTitleSize(tsize/1.2);
-  h1_packet_number->GetYaxis()->SetTitleSize(tsize/1.2);
+  h1_packet_number->GetXaxis()->SetLabelSize(tsize/1.15);
+  h1_packet_number->GetYaxis()->SetLabelSize(tsize/1.15);
+  h1_packet_number->GetXaxis()->SetTitleSize(tsize/1.15);
+  h1_packet_number->GetYaxis()->SetTitleSize(tsize/1.15);
   h1_packet_number->GetXaxis()->SetTitleOffset(1);
   gPad->SetBottomMargin(0.16);
   gPad->SetRightMargin(0.05);
@@ -790,7 +798,7 @@ int SepdMonDraw::DrawFifth(const std::string & /* what */)
   gPad->SetTicky();
   gPad->SetTickx();
 
-  // --- this one needs to be checked
+  // --- this one is okay
   Pad[12]->cd();
   h1_packet_chans->Draw("hist");
   h1_packet_chans->GetYaxis()->SetRangeUser(0, 150);
@@ -813,15 +821,17 @@ int SepdMonDraw::DrawFifth(const std::string & /* what */)
   gPad->SetTickx();
 
   Pad[13]->cd();
-  h1_packet_event->Draw("hist");
+  //  h1_packet_event->Draw("hist");
+  // h1_packet_event->SetLineColor(kWhite);;
+  // h1_packet_event->Draw("AH");
   double ymax = h1_packet_event->GetMaximum();
   double ymin = h1_packet_event->GetMinimum();
 
   // --- this one seems okay
   h1_packet_event->GetXaxis()->SetNdivisions(6);
   h1_packet_event->GetYaxis()->SetRangeUser(ymin - 0.3 * (ymax - ymin + 30), ymax + 0.3 * (ymax - ymin + 30));
-  h1_packet_event->GetXaxis()->SetTitle("Packet #");
-  h1_packet_event->GetYaxis()->SetTitle("clock offset");
+  // h1_packet_event->GetXaxis()->SetTitle("Packet #");
+  // h1_packet_event->GetYaxis()->SetTitle("clock offset");
   h1_packet_event->GetXaxis()->SetLabelSize(tsize/1.2);
   h1_packet_event->GetYaxis()->SetLabelSize(tsize/1.2);
   h1_packet_event->GetXaxis()->SetTitleSize(tsize/1.2);
@@ -885,7 +895,8 @@ int SepdMonDraw::DrawFifth(const std::string & /* what */)
   // --- draw the packet information
   TText PacketWarn;
   PacketWarn.SetTextFont(42);
-  PacketWarn.SetTextSize(0.04);
+  //PacketWarn.SetTextSize(0.04);
+  PacketWarn.SetTextSize(0.05);
   PacketWarn.SetTextColor(kBlack);
   PacketWarn.SetNDC();
   //PacketWarn.SetTextAlign(23);
@@ -893,11 +904,15 @@ int SepdMonDraw::DrawFifth(const std::string & /* what */)
   for (int i = 1; i <= 6; i++)
     {
       if ( packet_is_bad[i] ) PacketWarn.SetTextColor(kRed);
-      PacketWarn.DrawText(0.01, 0.7 - 0.05 * i, Form("%d: %d%% events, %d size, %d channels, %d offset", i+9000,
-                                                    int(100*h1_packet_number->GetBinContent(i)+0.5),
-                                                    (int)h1_packet_length->GetBinContent(i),
-                                                    (int)h1_packet_chans->GetBinContent(i),
-                                                    (int)h1_packet_event->GetBinContent(i)) );
+      // PacketWarn.DrawText(0.01, 0.7 - 0.05 * i, Form("%d: %d%% events, %d size, %d channels, %d offset", i+9000,
+      //                                               int(100*h1_packet_number->GetBinContent(i)+0.5),
+      //                                               (int)h1_packet_length->GetBinContent(i),
+      //                                               (int)h1_packet_chans->GetBinContent(i),
+      //                                               (int)h1_packet_event->GetBinContent(i)) );
+      PacketWarn.DrawText(0.01, 0.7 - 0.05 * i, Form("%d: %d%% events, %d size, %d channels", i+9000,
+                                                     int(100*h1_packet_number->GetBinContent(i)+0.5),
+                                                     (int)h1_packet_length->GetBinContent(i),
+                                                     (int)h1_packet_chans->GetBinContent(i)) );
       PacketWarn.SetTextColor(kBlack);
     }
   if ( badPackets.size() == 0 )
@@ -924,14 +939,15 @@ int SepdMonDraw::DrawFifth(const std::string & /* what */)
   std::ostringstream runnostream;
   std::string runstring;
   std::ostringstream runnostream2;
-  time_t evttime = getTime();
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
 
   runnostream << "Packet Information";
-  runnostream2 << " Run " << cl->RunNumber() << ", Time: " << ctime(&evttime);
+  runnostream2 << " Run " << cl->RunNumber() << ", Time: " << ctime(&evttime.first);
   transparent[4]->cd();
 
   runstring = runnostream.str();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, .99, runstring.c_str());
 
   runstring = runnostream2.str();
@@ -1009,15 +1025,6 @@ int SepdMonDraw::MakeHtml(const std::string &what)
   // out2.close();
   // cl->SaveLogFile(*this);
   return 0;
-}
-
-time_t SepdMonDraw::getTime()
-{
-  OnlMonClient *cl = OnlMonClient::instance();
-  time_t currtime = 0;
-
-  currtime = cl->EventTime("CURRENT");
-  return currtime;
 }
 
 int SepdMonDraw::returnRing(int ch)

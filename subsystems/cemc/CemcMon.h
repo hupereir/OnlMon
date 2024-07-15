@@ -71,6 +71,7 @@ class CemcMon : public OnlMon
   TH1* h1_waveform_time{nullptr};
   TH1* h1_waveform_pedestal{nullptr};
   TH2* h2_cemc_rm{nullptr};
+  TH2* h2_cemc_rmhits_alltrig{nullptr};
   TH2* h2_cemc_rmhits{nullptr};
   TH2* h2_cemc_mean{nullptr};
   TH1* h1_sectorAvg_total{nullptr};
@@ -79,6 +80,7 @@ class CemcMon : public OnlMon
   // TProfile*** h2_waveform= {nullptr};
   std::vector<runningMean*> rm_vector_twr;
   std::vector<runningMean*> rm_vector_twrhits;
+  std::vector<runningMean*> rm_vector_twrhits_alltrig;
 
   std::string runtypestr = "Unknown";
 
@@ -91,10 +93,10 @@ class CemcMon : public OnlMon
 
   bool isHottower(int pid, int channelid)
   {
-    if (pid == 6014 && channelid == 158) return true;
-    if (pid == 6030 && channelid == 158) return true;
-    if (pid == 6076 && channelid == 92) return true;
-    if (pid == 6127 && channelid == 28) return true;
+    if (pid == 6014 && channelid == 159) return true;
+    if (pid == 6030 && channelid == 159) return true;
+    if (pid == 6076 && channelid == 93) return true;
+    if (pid == 6127 && channelid == 29) return true;
     return false;
   }
 };

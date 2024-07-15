@@ -36,6 +36,7 @@ class CemcMonDraw : public OnlMonDraw
  private:
   int MakeCanvas(const std::string &name);
   int DrawFirst(const std::string &what = "ALL");
+  int DrawAllTrigHits(const std::string &what = "ALL");
   int DrawSecond(const std::string &what = "ALL");
   int DrawThird(const std::string &what = "ALL");
   int DrawFourth(const std::string &what = "ALL");
@@ -45,8 +46,7 @@ class CemcMonDraw : public OnlMonDraw
   int DrawHistory(const std::string &what = "ALL");
   int DrawServerStats();
 
-  int FindHotTower(TPad *warn, TH2 *);
-  time_t getTime();
+  int FindHotTower(TPad *warn, TH2 *, bool usetemplate = true);
   std::vector<int> getBadPackets(TH1 *hist, int what, float cutoff);
 
   const int nTowersEta{96};
@@ -59,7 +59,7 @@ class CemcMonDraw : public OnlMonDraw
   TCanvas *TC[19]{nullptr};
   // TCanvas *PopUpCanvas{nullptr};
   TPad *transparent[19]{nullptr};
-  TPad *Pad[29]{nullptr};
+  TPad *Pad[90]{nullptr};
   TPad *warning[29]{nullptr};
 
   // TPad *PopUpPad[8][8] {{nullptr}};

@@ -416,7 +416,16 @@ int TpcMonDraw::MakeCanvas(const std::string &name)
     transparent[32]->Draw();
     TC[32]->SetEditable(false);
   }
-     
+  else if (name == "TPCParityError")
+  {
+    TC[33] = new TCanvas(name.c_str(), "TPC CheckSumError Probability in Events",-1, 0, xsize , ysize );
+    gSystem->ProcessEvents();
+    TC[33]->Divide(4,7);
+    transparent[33] = new TPad("transparent33", "this does not show", 0, 0, 1, 1);
+    transparent[33]->SetFillStyle(4000);
+    transparent[33]->Draw();
+    TC[33]->SetEditable(false);
+  }     
   return 0;
 }
 
@@ -442,6 +451,11 @@ int TpcMonDraw::Draw(const std::string &what)
   if (what == "ALL" || what == "TPCCHECKSUMERROR")
   {
     iret += DrawTPCCheckSum(what);
+    idraw++;
+  }
+  if (what == "ALL" || what == "TPCPARITYERROR")
+  {
+    iret += DrawTPCParity(what);
     idraw++;
   }
   if (what == "ALL" || what == "TPCADCVSSAMPLE")
@@ -764,12 +778,13 @@ int TpcMonDraw::DrawTPCModules(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_SUMADC Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   //turn off stats box
@@ -826,12 +841,13 @@ int TpcMonDraw::DrawTPCSampleSize(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_SampleSize Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -921,12 +937,13 @@ int TpcMonDraw::DrawTPCCheckSum(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_CheckSumError Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -982,12 +999,13 @@ int TpcMonDraw::DrawTPCADCSample(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ADC_vs_SAMPLE Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -1042,12 +1060,13 @@ int TpcMonDraw::DrawTPCMaxADCModule(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_MAXADC2D Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -1123,12 +1142,13 @@ int TpcMonDraw::DrawTPCRawADC1D(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_RAWADC Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -1202,12 +1222,13 @@ int TpcMonDraw::DrawTPCMaxADC1D(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_LOCALMAXADC-PEDESTAL Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -1289,12 +1310,13 @@ int TpcMonDraw::DrawTPCXYclusters(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ADC-Pedestal>(5sigma||20ADC) WEIGHTED, Run" << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -1460,12 +1482,13 @@ int TpcMonDraw::DrawTPCXYclusters_unweighted(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ADC-Pedestal>(5sigma||20ADC), UNWEIGHTED, Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -1603,12 +1626,13 @@ int TpcMonDraw::DrawTPCADCSampleLarge(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ADC_vs_SAMPLE_large Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -1661,12 +1685,13 @@ int TpcMonDraw::DrawTPCZYclusters(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ADC-Pedestal>(5sigma||20ADC), WEIGHTED, Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -1762,12 +1787,13 @@ int TpcMonDraw::DrawTPCZYclusters_unweighted(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ADC-Pedestal>(5sigma||20ADC), UNWEIGHTED, Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -1858,12 +1884,13 @@ int TpcMonDraw::DrawTPCchannelphi_layer_weighted(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ChannelPhi_vs_Layer_ADC_weighted " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -1961,12 +1988,13 @@ int TpcMonDraw::DrawTPCPedestSubADC1D(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_PEDESTSUBADC Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -2013,12 +2041,13 @@ int TpcMonDraw::DrawTPCNEventsvsEBDC(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_N_Events_vs_EBDC " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -2093,12 +2122,13 @@ int TpcMonDraw::DrawTPCPedestSubADCSample(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_PEDEST_SUB_ADC_vs_SAMPLE Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -2153,12 +2183,13 @@ int TpcMonDraw::DrawTPCPedestSubADCSample_R1(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_PEDEST_SUB_ADC_vs_SAMPLE R1 ONLY Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -2213,12 +2244,13 @@ int TpcMonDraw::DrawTPCPedestSubADCSample_R2(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_PEDEST_SUB_ADC_vs_SAMPLE R2 ONLY Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -2273,12 +2305,13 @@ int TpcMonDraw::DrawTPCPedestSubADCSample_R3(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_PEDEST_SUB_ADC_vs_SAMPLE R3 ONLY Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
 
@@ -2361,12 +2394,13 @@ int TpcMonDraw::DrawTPCXYlaserclusters(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_LASER_ADC-Pedestal>(5sigma||20ADC) WEIGHTED, Run" << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -2541,12 +2575,13 @@ int TpcMonDraw::DrawTPCStuckChannels(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_StuckChannel Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -2629,12 +2664,13 @@ int TpcMonDraw::DrawTPCXYclusters5event(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_ADC-Pedestal>(5sigma||20ADC) UNWEIGHTED, <= 5E, Run" << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->cd(1);
@@ -2812,12 +2848,13 @@ int TpcMonDraw::DrawTPCChansinPacketNS(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_NS_Channels per Packet per RCDAQ Event Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -2909,12 +2946,13 @@ int TpcMonDraw::DrawTPCChansinPacketSS(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_SS_Channels per Packet per RCDAQ Event Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -2998,12 +3036,13 @@ int TpcMonDraw::DrawTPCNonZSChannels(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_Non-ZS Channels per SAMPA Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -3060,12 +3099,13 @@ int TpcMonDraw::DrawTPCZSTriggerADCSample(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_Trigger ADC vs Sample Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -3121,12 +3161,13 @@ int TpcMonDraw::DrawTPCFirstnonZSADCFirstnonZSSample(const std::string & /* what
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_1st non-ZS ADC vs 1st non-ZS Sample Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -3220,12 +3261,13 @@ int TpcMonDraw::DrawTPCDriftWindow(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_Drift Window, ADC-Pedestal>(5sigma||20ADC) Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -3372,12 +3414,13 @@ int TpcMonDraw::DrawTPCNStreaksvsEventNo(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_NStreakers_vs_Event # Packet per Sector" << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.99, runstring.c_str());
 
   MyTC->Update();
@@ -3463,12 +3506,13 @@ int TpcMonDraw::DrawTPCPacketTypes(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_WF PACKET FRACTION Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -3562,12 +3606,13 @@ int TpcMonDraw::DrawTPCChansperLVL1_NS(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_NS_Channels per LEVEL_1 TAGGER Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
@@ -3660,17 +3705,115 @@ int TpcMonDraw::DrawTPCChansperLVL1_SS(const std::string & /* what */)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_SS_Channels per LEVEL_1 TAGGER Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.91, runstring.c_str());
 
   MyTC->Update();
   MyTC->Show();
   MyTC->SetEditable(false);
+
+  return 0;
+}
+
+int TpcMonDraw::DrawTPCParity(const std::string & /* what */)
+{
+
+  OnlMonClient *cl = OnlMonClient::instance();
+  
+  TH1 *tpcmon_parityerror[24] = {nullptr};
+  TH1 *tpcmon_parities[24] = {nullptr};
+
+  char TPCMON_STR[100];
+  for( int i=0; i<24; i++ ) 
+  {
+    //const TString TPCMON_STR( Form( "TPCMON_%i", i ) );
+    sprintf(TPCMON_STR,"TPCMON_%i",i);
+    tpcmon_parityerror[i] = (TH1*) cl->getHisto(TPCMON_STR,"Parity_Error");
+    tpcmon_parities[i] = (TH1*) cl->getHisto(TPCMON_STR,"Check_Sums");
+  }
+
+  if (!gROOT->FindObject("TPCParityError"))
+  {
+    MakeCanvas("TPCParityError");
+  }
+  TCanvas *MyTC = TC[33];
+  TPad *TransparentTPad = transparent[33];
+
+  MyTC->SetEditable(true);
+  MyTC->Clear("D");
+  MyTC->cd(1);
+
+  TLine *t1 = new TLine(); t1->SetLineWidth(2);
+  TLine *t2 = new TLine(); t2->SetLineStyle(2);
+  TText *tt1= new TText(); tt1->SetTextSize(0.05);
+
+  int FEEid[26]={2,4,3,13,17,16, // R1
+                 11,12,19,18,0,1,15,14, // R2
+                 20,22,21,23,25,24,10,9,8,6,7,5 // R3
+                };
+
+  char title[50];
+
+  for( int i=0; i<24; i++ )
+  {
+    if( tpcmon_parityerror[i] && tpcmon_parities[i] )
+    {
+      MyTC->cd(i+5);
+
+      tpcmon_parityerror[i]->Divide(tpcmon_parities[i]);
+      tpcmon_parityerror[i]->GetYaxis()->SetRangeUser(0.0001,1.5);
+      tpcmon_parityerror[i]->DrawCopy("HIST");
+    
+      MyTC->Update();
+
+      for(int j=0;j<25;j++)
+      {
+        t2->DrawLine((j+1)*8,-0.01,(j+1)*8,1.5);
+      }
+      for(int k=0;k<26;k++)
+      {
+        sprintf(title,"%d",FEEid[k]);
+        tt1->DrawText(k*8+4,1.2,title);
+      }
+      tt1->SetTextSize(0.06);
+      tt1->DrawText(25,1.4,"R1");
+      tt1->DrawText(77,1.4,"R2");
+      tt1->DrawText(163,1.4,"R3");
+      tt1->SetTextSize(0.05); 
+
+      t1->DrawLine(48.5,-0.01,48.5,1.5);
+      t1->DrawLine(112.5,-0.01,112.5,1.5);
+
+    }
+  }
+
+  TText PrintRun;
+  PrintRun.SetTextFont(62);
+  PrintRun.SetTextSize(0.04);
+  PrintRun.SetNDC();          // set to normalized coordinates
+  PrintRun.SetTextAlign(23);  // center/top alignment
+  std::ostringstream runnostream;
+  std::string runstring;
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
+  // fill run number and event time into string
+  runnostream << ThisName << "_ParityError Run " << cl->RunNumber()
+              << ", Time: " << ctime(&evttime.first);
+  runstring = runnostream.str();
+  TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
+  PrintRun.DrawText(0.5, 0.91, runstring.c_str());
+
+  MyTC->Update();
+  //MyTC->SetLogy();
+  MyTC->Show();
+  MyTC->SetEditable(false);
+
 
   return 0;
 }

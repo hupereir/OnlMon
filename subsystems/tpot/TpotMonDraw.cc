@@ -331,13 +331,14 @@ void TpotMonDraw::draw_time( TPad* pad )
 
   std::ostringstream runnostream;
   auto cl = OnlMonClient::instance();
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
 
   runnostream
     << ThisName << " Run " << cl->RunNumber()
-    << ", Time: " << ctime(&evttime);
+    << ", Time: " << ctime(&evttime.first);
 
   pad->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 0.5, runnostream.str().c_str());
 }
 
@@ -395,6 +396,18 @@ TCanvas* TpotMonDraw::create_canvas(const std::string &name)
   } else if (name == "TPOT_adc_vs_sample") {
 
     auto cv = new TCanvas(name.c_str(), "TpotMon adc vs sample", -1, 0, xsize / 2, ysize);
+    gSystem->ProcessEvents();
+    divide_canvas(cv, 4, 4);
+    hide_margins(cv,0.2);
+    create_transparent_pad(name);
+
+    cv->SetEditable(false);
+    m_canvas.push_back( cv );
+    return cv;
+
+  } else if (name == "TPOT_sample_vs_channel") {
+
+    auto cv = new TCanvas(name.c_str(), "TpotMon sample vs channel", -1, 0, xsize / 2, ysize);
     gSystem->ProcessEvents();
     divide_canvas(cv, 4, 4);
     hide_margins(cv,0.2);
@@ -580,6 +593,39 @@ int TpotMonDraw::Draw(const std::string &what)
     ++idraw;
   }
 
+  if (what == "ALL" || what == "TPOT_sample_vs_channel")
+    {
+      iret += draw_array("TPOT_sample_vs_channel", get_histograms( "m_sample_channel" ), DrawOptions::Colz);
+      auto cv = get_canvas("TPOT_sample_vs_channel");
+      if( cv )
+	{
+	  CanvasEditor cv_edit(cv);
+	  cv->Update();
+	  for( int i = 0; i < MicromegasDefs::m_nfee; ++i )
+	    {
+	      auto&& pad = cv->GetPad(i+1);
+	      pad->cd();
+
+    	      // draw vertical lines that match HV sectors
+	      for( const int& channel:{64, 128, 196} )
+		{
+		  const auto line = vertical_line( pad, channel );
+		  line->SetLineStyle(2);
+		  line->SetLineColor(2);
+		  line->SetLineWidth(1);
+		  line->Draw();
+		}
+	    }
+	  {
+	    // mask scoz
+	    auto&& pad = cv->GetPad(9);
+	    pad->cd();
+	    mask_scoz(0.22,0.02,0.58, 0.98);
+	  }
+	}
+      ++idraw;
+    }
+
   if (what == "ALL" || what == "TPOT_adc_vs_channel")
   {
     iret += draw_array("TPOT_adc_vs_channel", get_histograms( "m_adc_channel" ), DrawOptions::Colz|DrawOptions::Logz );
@@ -610,7 +656,7 @@ int TpotMonDraw::Draw(const std::string &what)
       }
 
       {
-        // maks scoz
+        // mask scoz
         auto&& pad = cv->GetPad(9);
         pad->cd();
         mask_scoz(0.22,0.02,0.58, 0.98);
@@ -660,6 +706,26 @@ int TpotMonDraw::Draw(const std::string &what)
   if (what == "ALL" || what == "TPOT_hit_charge")
   {
     iret += draw_array("TPOT_hit_charge", get_histograms( "m_hit_charge" ), get_ref_histograms_scaled( "m_hit_charge" ), DrawOptions::Logy|DrawOptions::MatchRange );
+    auto cv = get_canvas("TPOT_hit_charge");
+    if( cv )
+    {
+      CanvasEditor cv_edit(cv);
+      cv->Update();
+      for( int i = 0; i < MicromegasDefs::m_nfee; ++i )
+      {
+        // draw vertical lines that match sample window
+        auto&& pad = cv->GetPad(i+1);
+        pad->cd();
+        if( m_mean_thresholds[i] > 0 )
+        {
+          auto line = vertical_line( pad, m_mean_thresholds[i] );
+          line->SetLineStyle(2);
+          line->SetLineColor(2);
+          line->SetLineWidth(2);
+          line->Draw();
+        }
+      }
+    }
     ++idraw;
   }
 

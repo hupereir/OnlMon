@@ -65,6 +65,18 @@ int InttMonDraw::Draw(const std::string& what)
     ++idraw;
   }
 
+  if (what == "ALL" || what == "fphx_bco")
+  {
+    iret += Draw_JustFphxBco();
+    ++idraw;
+  }
+
+  if (what == "ALL" || what == "zoomed_fphx_bco")
+  {
+    iret += Draw_ZoomedFphxBco();
+    ++idraw;
+  }
+
   // if (what == "ALL" || what == "peaks")
   // {
   //   iret += Draw_Peaks(icnvs);
@@ -74,6 +86,12 @@ int InttMonDraw::Draw(const std::string& what)
   if (what == "ALL" || what == "hitrates")
   {
     iret += Draw_HitRates();
+    ++idraw;
+  }
+
+  if (what == "ALL" || what == "history")
+  {
+    iret += Draw_History();
     ++idraw;
   }
 
@@ -167,6 +185,30 @@ int InttMonDraw::MakeCanvas(const std::string& name)
     TC[k_felixbcofphxbco]->SetTopMargin(0.05);
     TC[k_felixbcofphxbco]->SetBottomMargin(0.05);
   }
+  if (name == "InttJustFphxBco")
+  {
+    TC[k_justfphxbco] = new TCanvas(name.c_str(), "Just Fphx Bco", m_cnvs_width, m_cnvs_height);
+    gSystem->ProcessEvents();
+    transparent[k_justfphxbco] = new TPad(Form("transparent%d", k_justfphxbco), "this does not show", 0, 0, 1, 1);
+    transparent[k_justfphxbco]->SetFillStyle(4000);  // Transparent
+    transparent[k_justfphxbco]->Draw();
+    MakeDispPad(k_justfphxbco, 0.15);
+    TC[k_justfphxbco]->SetEditable(false);
+    TC[k_justfphxbco]->SetTopMargin(0.05);
+    TC[k_justfphxbco]->SetBottomMargin(0.05);
+  }
+  if (name == "InttZoomedFphxBco")
+  {
+    TC[k_zoomedfphxbco] = new TCanvas(name.c_str(), "Zoomed Fphx Bco", m_cnvs_width, m_cnvs_height);
+    gSystem->ProcessEvents();
+    transparent[k_zoomedfphxbco] = new TPad(Form("transparent%d", k_zoomedfphxbco), "this does not show", 0, 0, 1, 1);
+    transparent[k_zoomedfphxbco]->SetFillStyle(4000);  // Transparent
+    transparent[k_zoomedfphxbco]->Draw();
+    MakeDispPad(k_zoomedfphxbco, 0.15);
+    TC[k_zoomedfphxbco]->SetEditable(false);
+    TC[k_zoomedfphxbco]->SetTopMargin(0.05);
+    TC[k_zoomedfphxbco]->SetBottomMargin(0.05);
+  }
   if (name == "InttHitMap")
   {
     TC[k_hitmap] = new TCanvas(name.c_str(), "Intt Hit Map", -1, 0, m_cnvs_width, m_cnvs_height);
@@ -190,6 +232,18 @@ int InttMonDraw::MakeCanvas(const std::string& name)
     TC[k_hitrates]->SetEditable(false);
     TC[k_hitrates]->SetTopMargin(0.05);
     TC[k_hitrates]->SetBottomMargin(0.05);
+  }
+  if (name == "InttHistory")
+  {
+    TC[k_history] = new TCanvas(name.c_str(), "Intt History", m_cnvs_width, m_cnvs_height);
+    gSystem->ProcessEvents();
+    transparent[k_history] = new TPad(Form("transparent%d", k_history), "this does not show", 0, 0, 1, 1);
+    transparent[k_history]->SetFillStyle(4000);  // Transparent
+    transparent[k_history]->Draw();
+    MakeDispPad(k_history, 0.15);
+    TC[k_history]->SetEditable(false);
+    TC[k_history]->SetTopMargin(0.05);
+    TC[k_history]->SetBottomMargin(0.05);
   }
   return 0;
 }
@@ -263,7 +317,7 @@ int InttMonDraw::MakeDispPad(int icnvs, double lgnd_frac)
   m_disp_pad[icnvs]->Range(0.0, 0.0, 1.0, 1.0);
   m_disp_pad[icnvs]->Draw();
 
-  // Some methods do not need a legend, test this member variable
+  // Some methods do not need a legend, test this variable
   if (std::isfinite(lgnd_frac))
   {
     name = Form("intt_lgnd_pad_%d", icnvs);
@@ -295,6 +349,31 @@ int InttMonDraw::MakeDispPad(int icnvs, double lgnd_frac)
     m_hist_pad[icnvs][i]->Range(0.0, 0.0, 1.0, 1.0);
     m_hist_pad[icnvs][i]->Draw();
 
+    name = Form("intt_left_hist_pad_%d_%01d", icnvs, i);
+    m_left_hist_pad[icnvs][i] = new TPad(
+        name.c_str(), name.c_str(),                                                          //
+        (i % 4 + 0.0) / 4.0 * (1.0 - lgnd_frac), (i / 4 + 0.0) / 2.0 * (1.0 - m_disp_frac),  // Southwest x, y
+        (i % 4 + 0.5) / 4.0 * (1.0 - lgnd_frac), (i / 4 + 1.0) / 2.0 * (1.0 - m_disp_frac)   // Northeast x, y
+    );
+    TC[icnvs]->cd();
+    m_left_hist_pad[icnvs][i]->SetFillStyle(4000);  // Transparent
+    m_left_hist_pad[icnvs][i]->SetLeftMargin(0.15);
+    m_left_hist_pad[icnvs][i]->SetRightMargin(0.01);
+    m_left_hist_pad[icnvs][i]->Range(0.0, 0.0, 1.0, 1.0);
+    m_left_hist_pad[icnvs][i]->Draw();
+
+    name = Form("intt_right_hist_pad_%d_%01d", icnvs, i);
+    m_right_hist_pad[icnvs][i] = new TPad(
+        name.c_str(), name.c_str(),                                                          //
+        (i % 4 + 0.5) / 4.0 * (1.0 - lgnd_frac), (i / 4 + 0.0) / 2.0 * (1.0 - m_disp_frac),  // Southwest x, y
+        (i % 4 + 1.0) / 4.0 * (1.0 - lgnd_frac), (i / 4 + 1.0) / 2.0 * (1.0 - m_disp_frac)   // Northeast x, y
+    );
+    TC[icnvs]->cd();
+    m_right_hist_pad[icnvs][i]->SetFillStyle(4000);  // Transparent
+    m_right_hist_pad[icnvs][i]->SetLeftMargin(0.01);
+    m_right_hist_pad[icnvs][i]->Range(0.0, 0.0, 1.0, 1.0);
+    m_right_hist_pad[icnvs][i]->Draw();
+
     name = Form("intt_transparent_pad_%d_%01d", icnvs, i);
     m_transparent_pad[icnvs][i] = new TPad(
         name.c_str(), name.c_str(),                                                          //
@@ -306,6 +385,30 @@ int InttMonDraw::MakeDispPad(int icnvs, double lgnd_frac)
     m_transparent_pad[icnvs][i]->Range(0.0, 0.0, 1.0, 1.0);
     m_transparent_pad[icnvs][i]->Draw();
   }
+
+  name = Form("intt_single_hist_pad_%d", icnvs);
+  m_single_hist_pad[icnvs] = new TPad(
+      name.c_str(), name.c_str(),        //
+      0.0,             0.0,              // Southwest x, y
+      1.0 - lgnd_frac, 1.0 - m_disp_frac // Southwest x, y
+
+  );
+  TC[icnvs]->cd();
+  m_single_hist_pad[icnvs]->SetFillStyle(4000);  // Transparent
+  m_single_hist_pad[icnvs]->Range(0.0, 0.0, 1.0, 1.0);
+  m_single_hist_pad[icnvs]->Draw();
+
+  name = Form("intt_single_transparent_pad_%d", icnvs);
+  m_single_transparent_pad[icnvs] = new TPad(
+      name.c_str(), name.c_str(),        //
+      0.0,             0.0,              // Southwest x, y
+      1.0 - lgnd_frac, 1.0 - m_disp_frac // Southwest x, y
+
+  );
+  TC[icnvs]->cd();
+  m_single_transparent_pad[icnvs]->SetFillStyle(4000);  // Transparent
+  m_single_transparent_pad[icnvs]->Range(0.0, 0.0, 1.0, 1.0);
+  m_single_transparent_pad[icnvs]->Draw();
 
   return 0;
 }
@@ -347,9 +450,10 @@ int InttMonDraw::DrawDispPad_Generic(int icnvs, const std::string& title)
   title_text.DrawText(0.5, 0.75, title.c_str());
 
   // Display text
-  std::time_t evttime = cl->EventTime("CURRENT");  // BOR, CURRENT, or EOR
-  std::string text = "Run " + std::to_string(cl->RunNumber()) + ", Events: " + std::to_string((int) evt_hist->GetBinContent(1)) + ", " + ctime(&evttime);
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");  // BOR, CURRENT, or EOR
+  std::string text = "Run " + std::to_string(cl->RunNumber()) + ", Events: " + std::to_string((int) evt_hist->GetBinContent(1)) + ", " + ctime(&evttime.first);
   TText disp_text;
+  disp_text.SetTextColor(evttime.second);
   disp_text.SetTextAlign(22);
   disp_text.SetTextSize(m_disp_text_size);
   disp_text.DrawText(0.5, 0.5, text.c_str());
@@ -469,23 +573,22 @@ int InttMonDraw::DrawHistPad_FelixBcoFphxBco(
   if (!bco_hist)
   {
     m_transparent_pad[k_felixbcofphxbco][i]->cd();
-	TText dead_text;
-	dead_text.SetTextColor(kBlue);
-	dead_text.SetTextAlign(22);
-	dead_text.SetTextSize(0.1);
-	dead_text.SetTextAngle(45);
-	dead_text.DrawText(0.5, 0.5, "Dead Server");
+    TText dead_text;
+    dead_text.SetTextColor(kBlue);
+    dead_text.SetTextAlign(22);
+    dead_text.SetTextSize(0.1);
+    dead_text.SetTextAngle(45);
+    dead_text.DrawText(0.5, 0.5, "Dead Server");
     return 1;
   }
 
   // Fill
-  int bin, max = 0;
+  int max = 0;
   for (int fee = 0; fee < NFEES; ++fee)
   {
     for (int bco = 0; bco < NBCOS; ++bco)
     {
-      bin = fee * NBCOS + bco + 1;
-      int bincont = bco_hist->GetBinContent(bin);
+      int bincont = bco_hist->GetBinContent(bco_hist->GetBin(1, fee * NBCOS + bco + 1));
       if (bincont > max)
       {
         max = bincont;
@@ -503,6 +606,336 @@ int InttMonDraw::DrawHistPad_FelixBcoFphxBco(
   return 0;
 }
 
+//====== JustFphxBco ======//
+
+int InttMonDraw::Draw_JustFphxBco()
+{
+  if (!gROOT->FindObject("InttJustFphxBco"))
+  {
+    MakeCanvas("InttJustFphxBco");
+  }
+
+  TC[k_justfphxbco]->SetEditable(true);
+  m_style->cd();
+  if(DrawDispPad_Generic(k_justfphxbco, TC[k_justfphxbco]->GetTitle()) == -1)
+  {
+    return -1;
+  }
+
+  // Draw Legend
+  double lgnd_text_size = 0.08;
+  double lgnd_box_width = 0.16;
+  double lgnd_box_height = 0.01;
+
+  std::string name;
+
+  m_lgnd_pad[k_justfphxbco]->Clear();
+  m_lgnd_pad[k_justfphxbco]->cd();
+
+  double x0, y0, x[4], y[4];
+  for (int fee = 0; fee < 14; ++fee)
+  {
+    x0 = 0.5 - lgnd_box_width;
+    y0 = (2.0 * fee + 1.0) / (2.0 * 14);
+
+    TText lgnd_text;
+    lgnd_text.SetTextAlign(12);
+    lgnd_text.SetTextSize(lgnd_text_size);
+    lgnd_text.SetTextColor(kBlack);
+    lgnd_text.DrawText(x0 + 1.5 * lgnd_box_width, y0, Form("FChn %2d", fee));
+
+    x[0] = -1, x[1] = +1, x[2] = +1, x[3] = -1;
+    y[0] = -1, y[1] = -1, y[2] = +1, y[3] = +1;
+    for (int i = 0; i < 4; ++i)
+    {
+      x[i] *= 0.5 * lgnd_box_width;
+      x[i] += x0;
+
+      y[i] *= 0.5 * lgnd_box_height;
+      y[i] += y0;
+    }
+
+    TPolyLine box;
+    box.SetFillColor(GetFeeColor(fee));
+    box.SetLineColor(kBlack);
+    box.SetLineWidth(1);
+    box.DrawPolyLine(4, x, y, "f");
+  }
+
+  int iret = 1;
+  for (int i = 0; i < 8; ++i)
+  {
+    // If any subdraw succeeds, say the entire call succeeds
+    iret = DrawHistPad_JustFphxBco(i, k_justfphxbco) && iret;
+  }
+
+  TC[k_justfphxbco]->Update();
+  TC[k_justfphxbco]->Show();
+  TC[k_justfphxbco]->SetEditable(false);
+
+  return iret;
+}
+
+int InttMonDraw::DrawHistPad_JustFphxBco(
+    int i, int icnvs)
+{
+  for (int fee = 0; fee < 14; ++fee)
+  {
+    std::string name = Form("intt_hist_%d_%02d_%02d", icnvs, i, fee);
+    if (!m_hist_justfphxbco[i][fee])
+    {
+      TC[icnvs]->cd();
+      m_hist_justfphxbco[i][fee] = new TH1D(
+          name.c_str(), name.c_str(),  //
+          128, 0, 128                  //
+      );
+      m_hist_justfphxbco[i][fee]->SetTitle(Form("intt%01d;FPHX BCO;Counts (Hits)", i));
+      m_hist_justfphxbco[i][fee]->GetXaxis()->SetNdivisions(16);  //, true);
+      m_hist_justfphxbco[i][fee]->SetLineColor(GetFeeColor(fee));
+      m_hist_justfphxbco[i][fee]->SetFillStyle(4000);  // Transparent
+    }
+    m_hist_pad[k_justfphxbco][i]->SetLogy();
+    m_hist_pad[k_justfphxbco][i]->cd();
+
+    m_hist_justfphxbco[i][fee]->Reset();
+    m_hist_justfphxbco[i][fee]->Draw("same");
+  }
+
+  // Access client
+  OnlMonClient* cl = OnlMonClient::instance();
+
+  TH1* bco_hist = cl->getHisto(Form("INTTMON_%d", i), "InttBcoHist");
+  m_transparent_pad[k_justfphxbco][i]->Clear();
+  if (!bco_hist)
+  {
+    m_transparent_pad[k_justfphxbco][i]->cd();
+    TText dead_text;
+    dead_text.SetTextColor(kBlue);
+    dead_text.SetTextAlign(22);
+    dead_text.SetTextSize(0.1);
+    dead_text.SetTextAngle(45);
+    dead_text.DrawText(0.5, 0.5, "Dead Server");
+    return 1;
+  }
+
+  // Fill
+  int max = 0;
+  for (int fee = 0; fee < NFEES; ++fee)
+  {
+    for (int bco = 0; bco < NBCOS; ++bco)
+    {
+      int bincont = bco_hist->GetBinContent(bco_hist->GetBin(2, fee * NBCOS + bco + 1));
+      if (bincont > max)
+      {
+        max = bincont;
+      }
+      m_hist_justfphxbco[i][fee]->SetBinContent(bco + 1, bincont);  // + 1 is b/c the 0th bin is an underflow bin
+    }
+  }
+
+  // Noramlize ranges
+  for (int fee = 0; fee < NFEES; ++fee)
+  {
+    m_hist_justfphxbco[i][fee]->GetYaxis()->SetRangeUser(1, max ? max * 10 : 10);
+  }
+
+  return 0;
+}
+
+//====== ZoomedFphxBco ======//
+
+int InttMonDraw::Draw_ZoomedFphxBco()
+{
+  if (!gROOT->FindObject("InttZoomedFphxBco"))
+  {
+    MakeCanvas("InttZoomedFphxBco");
+  }
+
+  TC[k_zoomedfphxbco]->SetEditable(true);
+  m_style->cd();
+  if(DrawDispPad_Generic(k_zoomedfphxbco, TC[k_zoomedfphxbco]->GetTitle()) == -1)
+  {
+    return -1;
+  }
+
+  // Draw Legend
+  double lgnd_text_size = 0.08;
+  double lgnd_box_width = 0.16;
+  double lgnd_box_height = 0.01;
+
+  std::string name;
+
+  m_lgnd_pad[k_zoomedfphxbco]->Clear();
+  m_lgnd_pad[k_zoomedfphxbco]->cd();
+
+  double x0, y0, x[4], y[4];
+  for (int fee = 0; fee < 14; ++fee)
+  {
+    x0 = 0.5 - lgnd_box_width;
+    y0 = (2.0 * fee + 1.0) / (2.0 * 14);
+
+    TText lgnd_text;
+    lgnd_text.SetTextAlign(12);
+    lgnd_text.SetTextSize(lgnd_text_size);
+    lgnd_text.SetTextColor(kBlack);
+    lgnd_text.DrawText(x0 + 1.5 * lgnd_box_width, y0, Form("FChn %2d", fee));
+
+    x[0] = -1, x[1] = +1, x[2] = +1, x[3] = -1;
+    y[0] = -1, y[1] = -1, y[2] = +1, y[3] = +1;
+    for (int i = 0; i < 4; ++i)
+    {
+      x[i] *= 0.5 * lgnd_box_width;
+      x[i] += x0;
+
+      y[i] *= 0.5 * lgnd_box_height;
+      y[i] += y0;
+    }
+
+    TPolyLine box;
+    box.SetFillColor(GetFeeColor(fee));
+    box.SetLineColor(kBlack);
+    box.SetLineWidth(1);
+    box.DrawPolyLine(4, x, y, "f");
+  }
+
+  int iret = 1;
+  for (int i = 0; i < 8; ++i)
+  {
+    // If any subdraw succeeds, say the entire call succeeds
+    iret = DrawHistPad_ZoomedFphxBco(i, k_zoomedfphxbco) && iret;
+  }
+
+  TC[k_zoomedfphxbco]->Update();
+  TC[k_zoomedfphxbco]->Show();
+  TC[k_zoomedfphxbco]->SetEditable(false);
+
+  return iret;
+}
+
+int InttMonDraw::DrawHistPad_ZoomedFphxBco(
+    int i, int icnvs)
+{
+  int num_fphx_bins = 20;
+  for (int fee = 0; fee < NFEES; ++fee)
+  {
+    std::string name = Form("intt_left_hist_%d_%02d_%02d", icnvs, i, fee);
+    if (!m_left_hist_zoomedfphxbco[i][fee])
+    {
+      TC[icnvs]->cd();
+      m_left_hist_zoomedfphxbco[i][fee] = new TH1D(
+          name.c_str(), name.c_str(),  //
+          num_fphx_bins, 0, num_fphx_bins
+      );
+      m_left_hist_zoomedfphxbco[i][fee]->SetTitle(Form("intt%01d;FPHX BCO;Counts (Hits)", i));
+      m_left_hist_zoomedfphxbco[i][fee]->SetTitleSize(0.04);
+      m_left_hist_zoomedfphxbco[i][fee]->GetXaxis()->SetNdivisions(10);
+      // m_left_hist_zoomedfphxbco[i][fee]->GetXaxis()->SetLabelSize(0);
+      // m_left_hist_zoomedfphxbco[i][fee]->GetXaxis()->SetLabelOffset(999);
+      m_left_hist_zoomedfphxbco[i][fee]->GetYaxis()->SetLabelSize(0.04);
+      m_left_hist_zoomedfphxbco[i][fee]->SetLineColor(GetFeeColor(fee));
+      m_left_hist_zoomedfphxbco[i][fee]->SetFillStyle(4000);  // Transparent
+    }
+    m_left_hist_pad[k_zoomedfphxbco][i]->SetLogy();
+    m_left_hist_pad[k_zoomedfphxbco][i]->cd();
+    m_left_hist_zoomedfphxbco[i][fee]->Reset();
+    m_left_hist_zoomedfphxbco[i][fee]->Draw("same");
+   
+    name = Form("intt_right_hist_%d_%02d_%02d", icnvs, i, fee);
+    if (!m_right_hist_zoomedfphxbco[i][fee])
+    {
+      TC[icnvs]->cd();
+      m_right_hist_zoomedfphxbco[i][fee] = new TH1D(
+          name.c_str(), name.c_str(),  //
+          num_fphx_bins, 128 - num_fphx_bins, 128
+      );
+      m_right_hist_zoomedfphxbco[i][fee]->SetTitle(Form("intt%01d;FPHX BCO;Counts (Hits)", i));
+      m_right_hist_zoomedfphxbco[i][fee]->SetTitleSize(0.0);
+      m_right_hist_zoomedfphxbco[i][fee]->SetTitleOffset(999);
+      m_right_hist_zoomedfphxbco[i][fee]->GetXaxis()->SetNdivisions(10);
+      // m_right_hist_zoomedfphxbco[i][fee]->GetXaxis()->SetLabelSize(0);
+      // m_right_hist_zoomedfphxbco[i][fee]->GetXaxis()->SetLabelOffset(999);
+      m_right_hist_zoomedfphxbco[i][fee]->GetYaxis()->SetLabelSize(0);
+      m_right_hist_zoomedfphxbco[i][fee]->GetYaxis()->SetLabelOffset(999);
+      m_right_hist_zoomedfphxbco[i][fee]->SetLineColor(GetFeeColor(fee));
+      m_right_hist_zoomedfphxbco[i][fee]->SetFillStyle(4000);  // Transparent
+    } 
+    m_right_hist_pad[k_zoomedfphxbco][i]->SetLogy();
+    m_right_hist_pad[k_zoomedfphxbco][i]->cd();
+    m_right_hist_zoomedfphxbco[i][fee]->Reset();
+    m_right_hist_zoomedfphxbco[i][fee]->Draw("same");
+  }
+
+  // Access client
+  OnlMonClient* cl = OnlMonClient::instance();
+
+  TH1* bco_hist = cl->getHisto(Form("INTTMON_%d", i), "InttBcoHist");
+  m_transparent_pad[k_zoomedfphxbco][i]->Clear();
+  if (!bco_hist)
+  {
+    m_transparent_pad[k_zoomedfphxbco][i]->cd();
+    TText dead_text;
+    dead_text.SetTextColor(kBlue);
+    dead_text.SetTextAlign(22);
+    dead_text.SetTextSize(0.1);
+    dead_text.SetTextAngle(45);
+    dead_text.DrawText(0.5, 0.5, "Dead Server");
+    return 1;
+  }
+
+  // Fill
+  int max = 0;
+  for (int fee = 0; fee < NFEES; ++fee)
+  {
+    for (int bco = 0; bco < num_fphx_bins; ++bco)
+    {
+      int bincont = bco_hist->GetBinContent(bco_hist->GetBin(2, fee * NBCOS + bco + 1));
+      if (bincont > max)
+      {
+        max = bincont;
+      }
+      m_left_hist_zoomedfphxbco[i][fee]->SetBinContent(bco + 1, bincont);  // + 1 is b/c the 0th bin is an underflow bin
+    }
+
+    for (int bco = 128 - num_fphx_bins; bco < 128; ++bco)
+    {
+      int bincont = bco_hist->GetBinContent(bco_hist->GetBin(2, fee * NBCOS + bco + 1));
+      if (bincont > max)
+      {
+        max = bincont;
+      }
+      m_right_hist_zoomedfphxbco[i][fee]->SetBinContent(bco - (128 - num_fphx_bins) + 1, bincont);  // + 1 is b/c the 0th bin is an underflow bin
+    }
+  }
+
+  max *= 10;
+  if(max == 0)
+  {
+    max = 10;
+  }
+
+  // Noramlize ranges
+  for (int fee = 0; fee < NFEES; ++fee)
+  {
+    m_left_hist_zoomedfphxbco[i][fee]->GetYaxis()->SetRangeUser(1, max);
+    m_right_hist_zoomedfphxbco[i][fee]->GetYaxis()->SetRangeUser(1, max);
+
+    // TLines
+    TLine line;
+    line.SetLineWidth(2);
+    line.SetLineColor(kBlack);
+    line.SetLineStyle(2);
+  
+    m_left_hist_pad[k_zoomedfphxbco][i]->cd();
+    line.DrawLine(5, 0, 5, max);
+  
+    m_right_hist_pad[k_zoomedfphxbco][i]->cd();
+    line.DrawLine(116, 0, 116, max);
+    line.DrawLine(120, 0, 120, max);
+  }
+
+  return 0;
+}
+
 Color_t
 InttMonDraw::GetFeeColor(
     int const& fee)
@@ -510,11 +943,11 @@ InttMonDraw::GetFeeColor(
   switch (fee % 7)
   {
   case 0:
-    return (fee / 7) ? kGray + 3 : kBlack;
+    return (fee / 7) ? kOrange : kBlack;
   case 1:
     return kRed + 3 * (fee / 7);
   case 2:
-    return kYellow + 3 * (fee / 7);
+    return kViolet + 3 + 7 * (fee / 7);
   case 3:
     return kGreen + 3 * (fee / 7);
   case 4:
@@ -624,8 +1057,8 @@ int InttMonDraw::Draw_HitMap()
 
 int InttMonDraw::DrawHistPad_HitMap(int i, int icnvs)
 {
-  double lower = 0.005;
-  double upper = 0.025;
+  double lower = 0.015;
+  double upper = 0.650;
 
   std::string name = Form("intt_hist_%d_%01d", icnvs, i);
   if (!m_hist_hitmap[i])
@@ -633,8 +1066,8 @@ int InttMonDraw::DrawHistPad_HitMap(int i, int icnvs)
     TC[icnvs]->cd();
     m_hist_hitmap[i] = new TH2D(
         name.c_str(), name.c_str(),
-        26, 0, 26,  // 26, -0.5, 25.5,
-        14, 0, 14   // 14, -0.5, 13.5
+        26, -0.5, 25.5, //
+        14, -0.5, 13.5  //
     );
     m_hist_hitmap[i]->SetTitle(Form("intt%01d;Chip ID (0-base);Felix Channel", i));
 
@@ -646,6 +1079,7 @@ int InttMonDraw::DrawHistPad_HitMap(int i, int icnvs)
     Double_t levels[4] = {0, 1, 2, 3};
     m_hist_hitmap[i]->SetContour(4, levels);
   }
+  m_hist_pad[k_hitmap][i]->SetGrid(1);
   m_hist_pad[k_hitmap][i]->cd();
 
   m_hist_hitmap[i]->Reset();
@@ -660,12 +1094,12 @@ int InttMonDraw::DrawHistPad_HitMap(int i, int icnvs)
   if (!evt_hist || !hit_hist)
   {
     m_transparent_pad[k_hitmap][i]->cd();
-	TText dead_text;
-	dead_text.SetTextColor(kBlue);
-	dead_text.SetTextAlign(22);
-	dead_text.SetTextSize(0.1);
-	dead_text.SetTextAngle(45);
-	dead_text.DrawText(0.5, 0.5, "Dead Server");
+    TText dead_text;
+    dead_text.SetTextColor(kBlue);
+    dead_text.SetTextAlign(22);
+    dead_text.SetTextSize(0.1);
+    dead_text.SetTextAngle(45);
+    dead_text.DrawText(0.5, 0.5, "Dead Server");
     return 1;
   }
 
@@ -675,6 +1109,11 @@ int InttMonDraw::DrawHistPad_HitMap(int i, int icnvs)
     for (int chp = 0; chp < NCHIPS; ++chp)
     {
       double bincont = hit_hist->GetBinContent(fee * NCHIPS + chp + 1);
+      if(!bincont)
+      {
+        continue;
+        std::cout << "filled 0" << std::endl;
+      }
       bincont /= evt_hist->GetBinContent(2); // Normalize by number of unique BCOs
 
       // Assign a value to this bin
@@ -733,8 +1172,8 @@ int InttMonDraw::Draw_HitRates()
 int InttMonDraw::DrawHistPad_HitRates(
     int i, int icnvs)
 {
-  double lower = 0.0;
-  double upper = 0.025;
+  double lower = 0.00;
+  double upper = 0.65;
 
   // Validate member histos
   std::string name = Form("intt_hitrate_hist_%d_%01d", icnvs, i);
@@ -762,22 +1201,26 @@ int InttMonDraw::DrawHistPad_HitRates(
   if (!evt_hist || !hit_hist)
   {
     m_transparent_pad[k_hitrates][i]->cd();
-	TText dead_text;
-	dead_text.SetTextColor(kBlue);
-	dead_text.SetTextAlign(22);
-	dead_text.SetTextSize(0.1);
-	dead_text.SetTextAngle(45);
-	dead_text.DrawText(0.5, 0.5, "Dead Server");
+    TText dead_text;
+    dead_text.SetTextColor(kBlue);
+    dead_text.SetTextAlign(22);
+    dead_text.SetTextSize(0.1);
+    dead_text.SetTextAngle(45);
+    dead_text.DrawText(0.5, 0.5, "Dead Server");
     return 1;
   }
 
   // Fill
+  // double mean = 0.0, fraction = 0.0;
   for (int fee = 0; fee < NFEES; ++fee)
   {
     for (int chp = 0; chp < NCHIPS; ++chp)
     {
       double bincont = hit_hist->GetBinContent(fee * NCHIPS + chp + 1);
       bincont /= evt_hist->GetBinContent(2); // Normalize by number of events
+
+      // mean += bincont;
+      // if(bincont < upper)++fraction;
 
       // Manually catch overflows and put them in the last displayed bin
       if (upper <= bincont)
@@ -788,6 +1231,191 @@ int InttMonDraw::DrawHistPad_HitRates(
       m_hist_hitrates[i]->Fill(bincont);
     }
   }
+  // mean /= (NFEES * NCHIPS);
+  // fraction /= (NFEES * NCHIPS);
+  // std::cout << "mean: " << mean << " fraction less than " << upper << ": " << fraction << std::endl;
 
   return 0;
 }
+
+//====== History ======//
+
+int InttMonDraw::Draw_History()
+{
+  if (!gROOT->FindObject("InttHistory"))
+  {
+    MakeCanvas("InttHistory");
+  }
+
+  TC[k_history]->SetEditable(true);
+  m_style->cd();
+  if(DrawDispPad_Generic(k_history, TC[k_history]->GetTitle()) == -1)
+  {
+    return -1;
+  }
+
+  // hist
+  double max = 0.0;
+  int num_dead = 0;
+  m_single_transparent_pad[k_history]->Clear();
+  for(int i = 0; i < 8; ++i)
+  {
+    // Access client
+    OnlMonClient* cl = OnlMonClient::instance();
+
+    // check to see if the most recent intervals are identically dead
+    TH1* evt_hist = cl->getHisto(Form("INTTMON_%d", i), "InttEvtHist");
+    if(!evt_hist)
+    {
+      m_single_transparent_pad[k_history]->cd();
+      TText dead_text;
+      dead_text.SetTextColor(kBlue);
+      dead_text.SetTextAlign(22);
+      dead_text.SetTextSize(0.1);
+      dead_text.SetTextAngle(45);
+      // dead_text.DrawText(0.5, 0.5, "Dead Server");
+      ++num_dead;
+      continue;
+    }
+
+    // Server has been running for 3 minutes without recieving decodable BCOs
+    if(180 < evt_hist->GetBinContent(4))
+    {
+      ++num_dead;
+    }
+
+    TH1* log_hist = cl->getHisto(Form("INTTMON_%d", i), "InttLogHist");
+    if(!log_hist)
+    {
+      m_single_transparent_pad[k_history]->cd();
+      TText dead_text;
+      dead_text.SetTextColor(kBlue);
+      dead_text.SetTextAlign(22);
+      dead_text.SetTextSize(0.1);
+      dead_text.SetTextAngle(45);
+      // dead_text.DrawText(0.5, 0.5, "Dead Server");
+      ++num_dead;
+      continue;
+    }
+
+    // Validate member histos
+    int N = log_hist->GetNbinsX();
+    double w = log_hist->GetXaxis()->GetBinWidth(0);
+    std::string name = Form("intt_history_hist_%d", i);
+    if (!m_hist_history[i])
+    {
+      m_hist_history[i] = new TH1D(
+          name.c_str(), name.c_str(), //
+          N, 0.0, w * N //
+      );
+      m_hist_history[i]->SetTitle(Form("Rate of BCO decoding;Most recent %.0lf seconds;Decoded BCOs / s", (double)(w * N)));
+      m_hist_history[i]->SetFillStyle(4000); // Transparent
+      m_hist_history[i]->SetLineColor(GetFeeColor(i)); // Transparent
+    }
+    m_single_hist_pad[k_history]->cd();
+
+    m_hist_history[i]->Reset();
+    m_hist_history[i]->Draw("Same");
+
+    // Fill
+    int buff_index = log_hist->GetBinContent(N);
+    if(log_hist->GetBinContent(N + 1))
+    {
+      // The contents should be displayed as being wrapped
+      // start from right edge and go backward in time
+      for(int n = N; 0 < n; --n)
+      {
+        double rate = log_hist->GetBinContent(buff_index) / w;
+        m_hist_history[i]->SetBinContent(n, rate);
+        if(max < rate)
+        {
+          max = rate;
+        }
+        buff_index = (buff_index + N - 1) % N;
+      }
+    }
+    else
+    {
+      // The contents should not be displayed as being wrapped
+      // start from left edge and go forward in time
+      for(int n = 0; n < buff_index; ++n)
+      {
+        double rate = log_hist->GetBinContent(n + 1) / w;
+        m_hist_history[i]->SetBinContent(n + 1, rate);
+        if(max < rate)
+        {
+          max = rate;
+        }
+      }
+    }
+  }
+
+  if(2 < num_dead)
+  {
+    m_single_transparent_pad[k_history]->cd();
+    TText dead_text;
+    dead_text.SetTextColor(kRed);
+    dead_text.SetTextAlign(22);
+    dead_text.SetTextSize(0.1);
+    // dead_text.SetTextAngle(45);
+    dead_text.DrawText(0.5, 0.65, "Dead Felix Servers");
+    dead_text.DrawText(0.5, 0.35, "Restart Run");
+  }
+
+  for(int i = 0; i < 8; ++i)
+  {
+    if(!m_hist_history[i])
+    {
+      continue;
+    }
+    m_hist_history[i]->GetYaxis()->SetRangeUser(0, 1.5 * max);
+  }
+
+  // Draw Legend
+  double lgnd_text_size = 0.08;
+  double lgnd_box_width = 0.16;
+  double lgnd_box_height = 0.01;
+
+  std::string name;
+
+  m_lgnd_pad[k_history]->Clear();
+  m_lgnd_pad[k_history]->cd();
+
+  double x0, y0, x[4], y[4];
+  for (int i = 0; i < 8; ++i)
+  {
+    x0 = 0.5 - lgnd_box_width;
+    y0 = (2.0 * i + 1.0) / (2.0 * 8);
+
+    TText lgnd_text;
+    lgnd_text.SetTextAlign(12);
+    lgnd_text.SetTextSize(lgnd_text_size);
+    lgnd_text.SetTextColor(kBlack);
+    lgnd_text.DrawText(x0 + 1.5 * lgnd_box_width, y0, Form("intt%01d", i));
+
+    x[0] = -1, x[1] = +1, x[2] = +1, x[3] = -1;
+    y[0] = -1, y[1] = -1, y[2] = +1, y[3] = +1;
+    for (int j = 0; j < 4; ++j)
+    {
+      x[j] *= 0.5 * lgnd_box_width;
+      x[j] += x0;
+
+      y[j] *= 0.5 * lgnd_box_height;
+      y[j] += y0;
+    }
+
+    TPolyLine box;
+    box.SetFillColor(GetFeeColor(i));
+    box.SetLineColor(kBlack);
+    box.SetLineWidth(1);
+    box.DrawPolyLine(4, x, y, "f");
+  }
+
+  TC[k_history]->Update();
+  TC[k_history]->Show();
+  TC[k_history]->SetEditable(false);
+
+  return 0;
+}
+
+

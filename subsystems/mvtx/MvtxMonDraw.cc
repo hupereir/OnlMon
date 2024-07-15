@@ -202,7 +202,7 @@ int MvtxMonDraw::MakeCanvas(const std::string &name)
   }
   else if (name == "MvtxMonServerStats")
   {
-    TC[6] = new TCanvas(name.c_str(), "MvtxMon Server Stats", xsize / 2, 0, xsize / 2, ysize);
+    TC[6] = new TCanvas(name.c_str(), "MvtxMon Server Stats", -1, 0, xsize, ysize);
     gSystem->ProcessEvents();
     transparent[6] = new TPad("transparent6", "this does not show", 0, 0, 1, 1);
     transparent[6]->SetFillColor(kGray);
@@ -1726,12 +1726,13 @@ void MvtxMonDraw::PublishStatistics(int canvasID, OnlMonClient *cl)
   PrintRun.SetTextAlign(23);  // center/top alignment
   std::ostringstream runnostream;
   std::string runstring;
-  time_t evttime = cl->EventTime("CURRENT");
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
   // fill run number and event time into string
   runnostream << ThisName << "_1 Run " << cl->RunNumber()
-              << ", Time: " << ctime(&evttime);
+              << ", Time: " << ctime(&evttime.first);
   runstring = runnostream.str();
   transparent[canvasID]->cd();
+  PrintRun.SetTextColor(evttime.second);
   PrintRun.DrawText(0.5, 1., runstring.c_str());
   TC[canvasID]->Update();
   TC[canvasID]->Show();
@@ -1933,13 +1934,6 @@ void MvtxMonDraw::DrawPave(std::vector<MvtxMonDraw::Quality> status, int positio
     pt->AddText("#color[2]{QA Layer 2 Bad}");
   }
   pt->Draw();
-}
-
-time_t MvtxMonDraw::getTime()
-{
-  OnlMonClient *cl = OnlMonClient::instance();
-  time_t currtime = cl->EventTime("CURRENT");
-  return currtime;
 }
 
 int MvtxMonDraw::DrawServerStats()

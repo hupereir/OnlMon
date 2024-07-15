@@ -29,6 +29,8 @@ void StartPoms()
   subsys->AddAction("bbcDraw(\"SECOND\")", "MBD Timing Monitor");
   subsys->AddAction("bbcDraw(\"THIRD\")", "MBD Triggered Monitor");
   subsys->AddAction("bbcDraw(\"MBD2MCR\")", "MBD TOGGLE VTX TO MCR");
+  subsys->AddAction("bbcDraw(\"BADGL1\")", "MBD TOGGLE IGNORE GL1 MISS");
+  subsys->AddAction("bbcDraw(\"BbcMonServerStats\")", "MBD Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
 
@@ -37,6 +39,7 @@ void StartPoms()
   subsys->AddAction("cemcDraw(\"SECOND\")", "Packet Health [Expert]");
   subsys->AddAction("cemcDraw(\"THIRD\")", "Wave Forms");
   subsys->AddAction("cemcDraw(\"FIFTH\")", "Trigger [Expert]");
+  subsys->AddAction("cemcDraw(\"ALLTRIGHITS\")", "All Trigger Tower Hits");
   subsys->AddAction("cemcDraw(\"SEVENTH\")", "Zero-suppression info");
   subsys->AddAction("cemcDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
@@ -56,6 +59,7 @@ void StartPoms()
   //subsys->AddAction("ihcalDraw(\"FOURTH\")", "Packet Health [Expert]");
   subsys->AddAction("ihcalDraw(\"FIFTH\")", "Trigger [Expert]");
   subsys->AddAction("ihcalDraw(\"SIXTH\")", "Tower Status [Expert]");
+  subsys->AddAction("ihcalDraw(\"ALLTRIGHITS\")", "All Trigger Tower Hits");
   subsys->AddAction("ihcalDraw(\"SEVENTH\")", "Zero-suppression info");
   subsys->AddAction("ihcalDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
@@ -68,6 +72,7 @@ void StartPoms()
   //subsys->AddAction("ohcalDraw(\"FOURTH\")", "Packet Health [Expert]");
   subsys->AddAction("ohcalDraw(\"FIFTH\")", "Trigger [Expert]");
   subsys->AddAction("ohcalDraw(\"SIXTH\")", "Tower Status [Expert]");
+  subsys->AddAction("ohcalDraw(\"ALLTRIGHITS\")", "All Trigger Tower Hits");
   subsys->AddAction("ohcalDraw(\"SEVENTH\")", "Zero-suppression info");
   subsys->AddAction("ohcalDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
@@ -75,10 +80,11 @@ void StartPoms()
 
   subsys = new SubSystem("INTT", "intt");
   subsys->AddAction("inttDraw(\"chip_hitmap\")", "Chip Hitmap");
-  // subsys->AddAction("inttDraw(\"ladder_hitmap\")", "Ladder Hitmap");
-  //  subsys->AddAction("inttDraw(\"chip_nll\")", "Chip NLL");
   subsys->AddAction("inttDraw(\"bco_diff\")", "BCO Diff");
-  subsys->AddAction("inttDraw(\"hitrates\")", "Hitrates");
+  subsys->AddAction("inttDraw(\"zoomed_fphx_bco\")", "Zoomed Fphx BCO");
+  subsys->AddAction("inttDraw(\"history\")", "Decoding Rate");
+  subsys->AddAction("inttDraw(\"fphx_bco\")", "Fphx BCO [Expert]");
+  subsys->AddAction("inttDraw(\"hitrates\")", "Hitrates [Expert]");
   subsys->AddAction("inttDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
@@ -156,6 +162,7 @@ void StartPoms()
 
   subsys = new SubSystem("TPOT", "tpot");
   subsys->AddAction("tpotDraw(\"TPOT_counts_vs_sample\")", "Counts vs Sample");
+  subsys->AddAction("tpotDraw(\"TPOT_hit_charge\")", "Hit Charge");
   subsys->AddAction("tpotDraw(\"TPOT_hit_vs_channel\")", "Hit vs Strip");
   subsys->AddAction("tpotDraw(\"TPOT_counters\")", "Event counters [EXPERT]");
   subsys->AddAction("tpotDraw(\"TPOT_heartbeat_vs_channel\")", "Heartbit vs sampa [EXPERT]");
@@ -163,8 +170,8 @@ void StartPoms()
   subsys->AddAction("tpotDraw(\"TPOT_detector_occupancy\")", "Detector Occupancy [EXPERT]");
   subsys->AddAction("tpotDraw(\"TPOT_resist_occupancy\")", "Resist Occupnacy [EXPERT]");
   subsys->AddAction("tpotDraw(\"TPOT_adc_vs_sample\")", "ADC vs Sample [EXPERT]");
+  subsys->AddAction("tpotDraw(\"TPOT_sample_vs_channel\")", "Sample vs Channel [EXPERT]");
   subsys->AddAction("tpotDraw(\"TPOT_adc_vs_channel\")", "ADC vs Strip [EXPERT]");
-  subsys->AddAction("tpotDraw(\"TPOT_hit_charge\")", "Hit Charge [EXPERT]");
   subsys->AddAction("tpotDraw(\"TPOT_hit_multiplicity\")", "Hit Multiplicity [EXPERT]");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);

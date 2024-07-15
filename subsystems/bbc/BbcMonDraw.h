@@ -60,6 +60,12 @@ class BbcMonDraw : public OnlMonDraw
   int GetSendFlag();
   int UpdateSendFlag(const int flag);
 
+  // bad gl1 variables
+  int gl1badflag{0};      // 0 = normal, 1 = gl1bad
+  std::string gl1badflagfname;
+  int GetGL1BadFlag();
+  int UpdateGL1BadFlag(const int flag);
+
   TCanvas *TC[nCANVAS] = {nullptr};
   TPad *transparent[nCANVAS] = {nullptr};
 
@@ -137,6 +143,9 @@ class BbcMonDraw : public OnlMonDraw
   TH1 *Zvtx_10{nullptr};
   TH1 *Zvtx_30{nullptr};
   TH1 *Zvtx_60{nullptr};
+  TH1 *Zvtx_10_chk{nullptr};
+  TH1 *Zvtx_30_chk{nullptr};
+  TH1 *Zvtx_60_chk{nullptr};
   TH1 *Zvtx_zdcns{nullptr};
   TH1 *Zvtx_emcal{nullptr};
   TH1 *Zvtx_hcal{nullptr};

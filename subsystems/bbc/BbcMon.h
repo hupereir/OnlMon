@@ -15,7 +15,9 @@ class MbdEvent;
 class MbdGeom;
 class MbdOut;
 class MbdPmtContainer;
+//class GL1Manager;
 class eventReceiverClient;
+class RunDBodbc;
 // class OnlMonDB;
 
 class BbcMon : public OnlMon
@@ -40,6 +42,9 @@ class BbcMon : public OnlMon
   int useGL1{1};    // whether to use the GL1 data
   uint64_t triggervec{0};
   uint64_t triginput{0};
+  uint64_t trigraw{0};
+  uint64_t triglive{0};
+  uint64_t trigscaled{0};
   //uint64_t gl1_bco{0};
   uint64_t trigmask{0};       // accepted triggers
   uint64_t mbdtrig{0};        // main mbd trigger
@@ -53,6 +58,8 @@ class BbcMon : public OnlMon
   uint64_t emcalmbd{0};       // all emcal triggers, with bbc
   uint64_t hcalmbd{0};        // all hcal triggers, with bbc
   eventReceiverClient *erc{nullptr};
+  //GL1Manager *gl1mgr{nullptr};
+  RunDBodbc *rdb{nullptr};
 
   int evtcnt{0};
   // OnlMonDB *dbvars = nullptr;
@@ -68,6 +75,12 @@ class BbcMon : public OnlMon
   int GetFillNumber();
   int GetSendFlag();
   int UpdateSendFlag(const int flag);
+
+  // kludge to work around situations when gl1 events are being received
+  int gl1badflag{0};   // 0 = normal, 1 = gl1 bad, accept all events
+  std::string gl1badflagfname;
+  int GetGL1BadFlag();
+  int UpdateGL1BadFlag(const int flag);
 
   TH1 *bbc_trigs{nullptr};
   TH2 *bbc_adc{nullptr};
@@ -90,6 +103,9 @@ class BbcMon : public OnlMon
   TH1 *bbc_zvertex_10{nullptr};     // 10 cm cut
   TH1 *bbc_zvertex_30{nullptr};
   TH1 *bbc_zvertex_60{nullptr};
+  TH1 *bbc_zvertex_10_chk{nullptr};     // for checking the vertex cut only
+  TH1 *bbc_zvertex_30_chk{nullptr};
+  TH1 *bbc_zvertex_60_chk{nullptr};
   TH1 *bbc_zvertex_zdcns{nullptr};  // ZDCNS triggers
   TH1 *bbc_zvertex_emcal{nullptr};  // EMCAL triggers
   TH1 *bbc_zvertex_hcal{nullptr};   // HCAL triggers
