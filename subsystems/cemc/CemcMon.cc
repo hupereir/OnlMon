@@ -42,6 +42,7 @@ const int depth = 50000;
 // const float hit_threshold = 100;
 const float hit_threshold = 100;
 const float waveform_hit_threshold = 100;
+const float chi2_check_threshold = 3000;
 
 using namespace std;
 
@@ -100,6 +101,7 @@ int CemcMon::Init()
     h2_cemc_hits_trig[itrig] = new TH2F(Form("h2_cemc_hits_trig_bit_%d", itrig), "", 96, 0, 96, 256, 0, 256);
   }
   p2_zsFrac_etaphi = new TProfile2D("p2_zsFrac_etaphi", "", 96, 0, 96, 256, 0, 256);
+  p2_zsFrac_etaphi_all = new TProfile2D("p2_zsFrac_etaphi_all", "", 96, 0, 96, 256, 0, 256);
   h1_cemc_trig = new TH1F("h1_cemc_trig", "", 64, -0.5, 63.5);
   h1_packet_event = new TH1F("h1_packet_event", "", 8, packetlow - 0.5, packethigh + 0.5);
   h2_caloPack_gl1_clock_diff = new TH2F("h2_caloPack_gl1_clock_diff", "", 8, packetlow - 0.5, packethigh + 0.5, 65536, 0, 65536);
@@ -131,6 +133,8 @@ int CemcMon::Init()
   h1_packet_length = new TH1F("h1_packet_length", "", 128, 6000.5, 6128.5);
   h1_packet_chans = new TH1F("h1_packet_chans", "", 128, 6000.5, 6128.5);
 
+  p2_bad_chi2 = new TProfile2D("p2_bad_chi2", "", 96, 0, 96, 256, 0, 256);
+
   // make the per-packet running mean objects
   // 32 packets and 48 channels for hcal detectors
   for (int i = 0; i < Ntower; i++)
@@ -151,6 +155,8 @@ int CemcMon::Init()
     se->registerHisto(this, h2_cemc_hits_trig[itrig]);
   }
   se->registerHisto(this, p2_zsFrac_etaphi);
+  se->registerHisto(this, p2_zsFrac_etaphi_all);
+  se->registerHisto(this, p2_bad_chi2);
   se->registerHisto(this, h1_cemc_trig);
   se->registerHisto(this, h1_packet_event);
   se->registerHisto(this, h2_caloPack_gl1_clock_diff);
@@ -479,6 +485,15 @@ int CemcMon::process_event(Event *e /* evt */)
         }
         //_______________________________________________________end of MBD trigger requirement
 
+         if (p->iValue(c, "SUPPRESSED"))
+          {
+            p2_zsFrac_etaphi_all->Fill(eta_bin, phi_bin, 0);
+          }
+          else
+          {
+            p2_zsFrac_etaphi_all->Fill(eta_bin, phi_bin, 1);
+          }
+
 
 
         if (signalFast > waveform_hit_threshold)
@@ -513,6 +528,22 @@ int CemcMon::process_event(Event *e /* evt */)
           rm_vector_twrhits_alltrig[towerNumber - 1]->Add(&zero);
         }
         h2_cemc_rmhits_alltrig->SetBinContent(bin, rm_vector_twrhits_alltrig[towerNumber - 1]->getMean(0));
+
+        if (signalFast > chi2_check_threshold)
+        {
+          std::vector<float> resultTemp = anaWaveformTemp(p, c);  // template waveform fitting
+          float chi2 = resultTemp.at(3);
+          if(chi2 > 100000)
+          {
+            p2_bad_chi2->Fill(eta_bin, phi_bin, 1);
+          }
+          else
+          {
+            p2_bad_chi2->Fill(eta_bin, phi_bin, 0);
+          }
+        }
+        
+
 
         /*
         if (!((eventCounter - 2) % 10000))

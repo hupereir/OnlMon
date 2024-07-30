@@ -28,8 +28,9 @@ void StartPoms()
   subsys->AddAction("bbcDraw(\"FIRST\")", "MBD Vertex Monitor");
   subsys->AddAction("bbcDraw(\"SECOND\")", "MBD Timing Monitor");
   subsys->AddAction("bbcDraw(\"THIRD\")", "MBD Triggered Monitor");
+  subsys->AddAction("bbcDraw(\"BbcMon5\")", "Vertex for All Triggers");
   subsys->AddAction("bbcDraw(\"MBD2MCR\")", "MBD TOGGLE VTX TO MCR");
-  subsys->AddAction("bbcDraw(\"BADGL1\")", "MBD TOGGLE IGNORE GL1 MISS");
+  //  subsys->AddAction("bbcDraw(\"BADGL1\")", "MBD TOGGLE IGNORE GL1 MISS");
   subsys->AddAction("bbcDraw(\"BbcMonServerStats\")", "MBD Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
@@ -41,16 +42,18 @@ void StartPoms()
   subsys->AddAction("cemcDraw(\"FIFTH\")", "Trigger [Expert]");
   subsys->AddAction("cemcDraw(\"ALLTRIGHITS\")", "All Trigger Tower Hits");
   subsys->AddAction("cemcDraw(\"SEVENTH\")", "Zero-suppression info");
+  subsys->AddAction("cemcDraw(\"ALLTRIGZS\")", "All Trigger ZS info");
+  subsys->AddAction("cemcDraw(\"BADCHI2\")", "Bad Chi2 Towers [Expert]");
   subsys->AddAction("cemcDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
 
-  subsys = new SubSystem("DAQ", "daq");
-  subsys->AddAction("daqDraw(\"FIRST\")", "Calo-GL1 Check");
-  subsys->AddAction("daqDraw(\"SECOND\")", "Calo FEM Check");
-  subsys->AddAction("daqDraw(\"SERVERSTATS\")", "Server Stats");
-  subsys->AddAction(new SubSystemActionSavePlot(subsys));
-  pmf->RegisterSubSystem(subsys);
+  // subsys = new SubSystem("DAQ", "daq");
+  // subsys->AddAction("daqDraw(\"FIRST\")", "Calo-GL1 Check");
+  // subsys->AddAction("daqDraw(\"SECOND\")", "Calo FEM Check");
+  // subsys->AddAction("daqDraw(\"SERVERSTATS\")", "Server Stats");
+  // subsys->AddAction(new SubSystemActionSavePlot(subsys));
+  // pmf->RegisterSubSystem(subsys);
 
   subsys = new SubSystem("Inner HCAL", "ihcal");
   subsys->AddAction("ihcalDraw(\"FIRST\")", "Towers");
@@ -61,6 +64,7 @@ void StartPoms()
   subsys->AddAction("ihcalDraw(\"SIXTH\")", "Tower Status [Expert]");
   subsys->AddAction("ihcalDraw(\"ALLTRIGHITS\")", "All Trigger Tower Hits");
   subsys->AddAction("ihcalDraw(\"SEVENTH\")", "Zero-suppression info");
+  subsys->AddAction("ihcalDraw(\"ALLTRIGZS\")", "All Trigger ZS info");
   subsys->AddAction("ihcalDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
@@ -74,6 +78,7 @@ void StartPoms()
   subsys->AddAction("ohcalDraw(\"SIXTH\")", "Tower Status [Expert]");
   subsys->AddAction("ohcalDraw(\"ALLTRIGHITS\")", "All Trigger Tower Hits");
   subsys->AddAction("ohcalDraw(\"SEVENTH\")", "Zero-suppression info");
+  subsys->AddAction("ohcalDraw(\"ALLTRIGZS\")", "All Trigger ZS info");
   subsys->AddAction("ohcalDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
@@ -81,9 +86,9 @@ void StartPoms()
   subsys = new SubSystem("INTT", "intt");
   subsys->AddAction("inttDraw(\"chip_hitmap\")", "Chip Hitmap");
   subsys->AddAction("inttDraw(\"bco_diff\")", "BCO Diff");
-  subsys->AddAction("inttDraw(\"zoomed_fphx_bco\")", "Zoomed Fphx BCO");
+  // subsys->AddAction("inttDraw(\"zoomed_fphx_bco\")", "Zoomed Fphx BCO");
   subsys->AddAction("inttDraw(\"history\")", "Decoding Rate");
-  subsys->AddAction("inttDraw(\"fphx_bco\")", "Fphx BCO [Expert]");
+  // subsys->AddAction("inttDraw(\"fphx_bco\")", "Fphx BCO [Expert]");
   subsys->AddAction("inttDraw(\"hitrates\")", "Hitrates [Expert]");
   subsys->AddAction("inttDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
@@ -130,6 +135,7 @@ void StartPoms()
   subsys->AddAction("tpcDraw(\"TPCMODULE\")", "TPC SUM[ADC]");
   subsys->AddAction("tpcDraw(\"TPCSAMPLESIZE\")", "TPC Sample Size");
   subsys->AddAction("tpcDraw(\"TPCCHECKSUMERROR\")", "TPC Checksum Error Prob.");
+  subsys->AddAction("tpcDraw(\"TPCPARITYERROR\")", "TPC Parity Error Prob.");
   subsys->AddAction("tpcDraw(\"TPCADCVSSAMPLE\")", "TPC ADC vs. Sample");
   subsys->AddAction("tpcDraw(\"TPCADCVSSAMPLELARGE\")", "TPC ADC vs. Large Sample");
   subsys->AddAction("tpcDraw(\"TPCMAXADCMODULE\")", "TPC MAX10ADC-Pedestal 1D");

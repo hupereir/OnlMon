@@ -59,6 +59,7 @@ class CemcMon : public OnlMon
   TH2* h2_caloPack_gl1_clock_diff{nullptr};
   TProfile* h_evtRec{nullptr};
   TProfile2D* p2_zsFrac_etaphi{nullptr};
+  TProfile2D* p2_zsFrac_etaphi_all{nullptr};
 
   TH1* h1_packet_chans{nullptr};
   TH1* h1_packet_length{nullptr};
@@ -77,6 +78,7 @@ class CemcMon : public OnlMon
   TH1* h1_sectorAvg_total{nullptr};
   TH1* h1_event{nullptr};
   TH1* h1_rm_sectorAvg[100] = {nullptr};
+  TProfile2D* p2_bad_chi2{nullptr};
   // TProfile*** h2_waveform= {nullptr};
   std::vector<runningMean*> rm_vector_twr;
   std::vector<runningMean*> rm_vector_twrhits;
