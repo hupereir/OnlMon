@@ -132,6 +132,7 @@ int BbcMon::Init()
       else if ( label == "TRIGMASK" )
       {
           trigmask = trigbit;
+          orig_trigmask = trigbit;
       }
       else if ( label == "USEGL1" )
       {
@@ -640,6 +641,7 @@ int BbcMon::BeginRun(const int runno)
   // get gl1badflag on new run
   GetGL1BadFlag();
 
+  uint64_t trigs_enabled = 0;
   if ( rdb != nullptr )
   {
     std::vector<int> scaledowns;
@@ -649,7 +651,26 @@ int BbcMon::BeginRun(const int runno)
     {
       bbc_prescale_hist->SetBinContent( itrig+1, scaledowns[itrig] );
       std::cout << "scaledowns " << itrig << "\t" << scaledowns[itrig] << std::endl;
+
+      if ( scaledowns[itrig] >= 0 )
+      {
+        trigs_enabled |= (0x1UL<<itrig);
+      }
     }
+  }
+  std::cout << "trigs_enabled 0x" << std::hex << trigs_enabled << std::dec << std::endl;
+
+  mbdns = GetMinBiasTrigBit( trigs_enabled );
+
+  if ( mbdns == std::numeric_limits<uint64_t>::max() )
+  {
+    std::cout << "Oddball run without a proper MB trigger, using all triggers instead" << std::endl;
+    trigmask = std::numeric_limits<uint64_t>::max();
+    std::cout << std::hex << "trigmask " << trigmask << std::dec << std::endl;
+  }
+  else
+  {
+    trigmask = orig_trigmask;
   }
 
   return 0;
@@ -660,6 +681,23 @@ int BbcMon::GetFillNumber()
   TString retval = gSystem->GetFromPipe( "/home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -g ringSpec.blue fillNumberM | awk 'NR==1 {print $3}'" );
   int fill = retval.Atoi();
   return fill;
+}
+
+uint64_t BbcMon::GetMinBiasTrigBit(uint64_t trigs_enabled)
+{
+  // look for MB triggers, in order (bits 10-14)
+  for (int ibit=10; ibit<=14; ibit++)
+  {
+    uint64_t mb_bit = 0x1UL<<ibit;
+    if ( (mb_bit&trigs_enabled) == mb_bit )
+    {
+      return mb_bit;
+    }
+  }
+  // maybe here we could fall back to a coincidence with an MBD trigger?
+
+  // no match, use any trigger
+  return std::numeric_limits<uint64_t>::max();
 }
 
 int BbcMon::UpdateSendFlag(const int flag)
@@ -727,7 +765,7 @@ int BbcMon::GetGL1BadFlag()
     gl1badflag = 0;
   }
   gl1badflagfile.close();
-  std::cout << "XXX gl1bad " << gl1badflag << std::endl;
+  //std::cout << "XXX gl1badflag " << gl1badflag << std::endl;
 
   return gl1badflag;
 }
@@ -810,6 +848,15 @@ int BbcMon::process_event(Event *evt)
     std::cout << "mbd evt " << f_evt << "\t" << useGL1 << std::endl;
   }
 
+  if ( f_evt < skipto )
+  {
+      if ( (f_evt%10000)==0 )
+      {
+          std::cout << "skipping " << f_evt << std::endl;
+      }
+      return 0;
+  }
+
   if ( (f_evt%1000)==0 )
   {
     GetGL1BadFlag();
@@ -825,54 +872,55 @@ int BbcMon::process_event(Event *evt)
     triglive = 0UL;
     trigscaled = 0UL;
     Event *gl1Event = erc->getEvent( f_evt );
+    //std::cout << "gl1event " << (uint64_t)gl1Event << "\t" << f_evt << std::endl;
 
     if (gl1Event)
-      {      
-	se->IncrementGl1FoundCounter();
-	//std::cout << "Found gl1event " << f_evt << std::endl;
-	Packet* p_gl1 = gl1Event->getPacket(14001);
-	if (p_gl1)
-      {
-        //gl1_bco = p_gl1->lValue(0,"BCO");
-        triggervec = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerVector") );
-        triginput = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerInput") );
-        //std::cout << "trig " << std::hex << triggervec << "\t" << triginput << std::dec << std::endl;
-        
-        trigraw = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerInput") );
-        triglive = static_cast<uint64_t>( p_gl1->lValue(0,"LiveVector") );
-        trigscaled = static_cast<uint64_t>( p_gl1->lValue(0,"ScaledVector") );
-
-        triggervec = trigscaled;
-
-        /*
-        std::cout << "TRIGS" << std::hex << std::endl;
-        std::cout << "TrigInp\t" << std::setw(12) << triginput << std::endl;
-        std::cout << "TrigVec\t" << std::setw(12) << triggervec << std::endl;
-        std::cout << "RAW\t" << std::setw(12) << trigraw << std::endl;
-        std::cout << "LIVE\t" << std::setw(12) << triglive << std::endl;
-        std::cout << "SCALED\t" << std::setw(12) << trigscaled << std::endl;
-        std::cout << "BUSY\t" << std::setw(12) << busy << std::endl;
-        std::cout << std::dec << std::endl;
-        */
-
-        for (int itrig = 0; itrig < 64; itrig++ )
+    {      
+        se->IncrementGl1FoundCounter();
+        //std::cout << "Found gl1event " << f_evt << std::endl;
+        Packet* p_gl1 = gl1Event->getPacket(14001);
+        if (p_gl1)
         {
-          uint64_t trigbit = 0x1UL << itrig;
-          if ( (triggervec&trigbit) != 0 )
-          {
-            bbc_trigs->Fill( itrig );
-          }
-        }
+            //gl1_bco = p_gl1->lValue(0,"BCO");
+            triggervec = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerVector") );
+            triginput = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerInput") );
+            //std::cout << "trig " << std::hex << triggervec << "\t" << triginput << std::dec << std::endl;
 
-        delete p_gl1;
-      }
-      delete gl1Event;
+            trigraw = static_cast<uint64_t>( p_gl1->lValue(0,"TriggerInput") );
+            triglive = static_cast<uint64_t>( p_gl1->lValue(0,"LiveVector") );
+            trigscaled = static_cast<uint64_t>( p_gl1->lValue(0,"ScaledVector") );
+
+            triggervec = trigscaled;
+
+            /*
+               std::cout << "TRIGS" << std::hex << std::endl;
+               std::cout << "TrigInp\t" << std::setw(12) << triginput << std::endl;
+               std::cout << "TrigVec\t" << std::setw(12) << triggervec << std::endl;
+               std::cout << "RAW\t" << std::setw(12) << trigraw << std::endl;
+               std::cout << "LIVE\t" << std::setw(12) << triglive << std::endl;
+               std::cout << "SCALED\t" << std::setw(12) << trigscaled << std::endl;
+               std::cout << "BUSY\t" << std::setw(12) << busy << std::endl;
+               std::cout << std::dec << std::endl;
+               */
+
+            for (int itrig = 0; itrig < 64; itrig++ )
+            {
+                uint64_t trigbit = 0x1UL << itrig;
+                if ( (triggervec&trigbit) != 0 )
+                {
+                    bbc_trigs->Fill( itrig );
+                }
+            }
+
+            delete p_gl1;
+        }
+        delete gl1Event;
     }
   }
   else
   {
-    // if we don't use GL1, set every trig bit true
-    triggervec = std::numeric_limits<uint64_t>::max();
+      // if we don't use GL1, set every trig bit true
+      triggervec = std::numeric_limits<uint64_t>::max();
   }
 
   // calculate BBC
@@ -881,18 +929,19 @@ int BbcMon::process_event(Event *evt)
 
   if (bevt->calib_is_done() == 0)
   {
-    return 0;
+      return 0;
   }
 
   // Skip if this doesn't have a relevant trigger
   // (Can use any trigger for sampmax calib, in principle)
   if ( ((triggervec&trigmask) == 0UL) && (gl1badflag==0) )
   {
-    if ( f_evt%1000 == 0 )
-    {
-      std::cout << "skipping " << f_evt << "\t" << std::hex << triggervec << std::dec << std::endl;
-    }
-    return 0;
+      if ( f_evt%1000 == 0 )
+      {
+          std::cout << "skipping " << f_evt << "\t" << std::hex << triggervec
+              << "\t" << trigmask << std::dec << std::endl;
+      }
+      return 0;
   }
 
   bevt->Calculate(m_mbdpmts, m_mbdout);
@@ -911,31 +960,36 @@ int BbcMon::process_event(Event *evt)
   evtcnt++;
   if (counter < 10)
   {
-    std::cout << "zt\t" << f_evt << "\t" << zvtx << "\t" << t0 << std::endl;
-    counter++;
+      std::cout << "zt\t" << f_evt << "\t" << zvtx << "\t" << t0 << std::endl;
+      counter++;
   }
 
   // vertex and t0
+  //std::cout << "mbdns " << std::hex << mbdns << std::dec << std::endl;
   if ( (triggervec&mbdns)!=0 )
   {
-    bbc_zvertex->Fill(zvtx);
-    bbc_zvertex_ns->Fill(zvtx);
-    bbc_south_nhit->Fill( south_nhits );
-    bbc_north_nhit->Fill( north_nhits );
+      bbc_nevent_counter->Fill(5);  // num BBCNS triggers
 
-    if ( triginput&mbdnsvtx10 )
-    {
-        bbc_zvertex_10_chk->Fill(zvtx);
-    }
-    if ( triginput&mbdnsvtx30 )
-    {
-        bbc_zvertex_30_chk->Fill(zvtx);
-    }
-    if ( triginput&mbdnsvtx60 )
-    {
-        bbc_zvertex_60_chk->Fill(zvtx);
-    }
+      bbc_zvertex->Fill(zvtx);
+      bbc_zvertex_short->Fill(zvtx);
+      bbc_zvertex_ns->Fill(zvtx);
+      bbc_south_nhit->Fill( south_nhits );
+      bbc_north_nhit->Fill( north_nhits );
+
+      if ( triginput&mbdnsvtx10 )
+      {
+          bbc_zvertex_10_chk->Fill(zvtx);
+      }
+      if ( triginput&mbdnsvtx30 )
+      {
+          bbc_zvertex_30_chk->Fill(zvtx);
+      }
+      if ( triginput&mbdnsvtx60 )
+      {
+          bbc_zvertex_60_chk->Fill(zvtx);
+      }
   }
+
   if ( triggervec&mbdnsvtx10 )
   {
       bbc_zvertex_10->Fill(zvtx);
@@ -980,8 +1034,8 @@ int BbcMon::process_event(Event *evt)
   // now fill in histograms when gl1 bypass is requested
   if ( gl1badflag )
   {
-    bbc_zvertex_ns->Fill(zvtx);
-    bbc_zvertex_10->Fill(zvtx);
+      bbc_zvertex_ns->Fill(zvtx);
+      bbc_zvertex_10->Fill(zvtx);
   }
   //with all triggers
   bbc_zvertex_alltrigger->Fill(zvtx);
@@ -989,74 +1043,75 @@ int BbcMon::process_event(Event *evt)
   // only process for primary mbd trigger
   if ( ((triggervec&mbdtrig) == 0) && (gl1badflag==0) )
   {
-    return 0;
+      return 0;
   }
 
   bbc_tzero_zvtx->Fill(zvtx, t0);
-  bbc_zvertex_short->Fill(zvtx);
 
-  int n_goodevt = bbc_nevent_counter->GetBinContent(2);
-  if (n_goodevt % 1000 == 0)
+  //int n_goodevt = bbc_nevent_counter->GetBinContent(6);
+  if ( bbc_zvertex_short->Integral() >= 200 )
   {
-    f_zvtx->SetRange(-75., 75.);
-    f_zvtx->SetParameters(250, 0., 10);
-    bbc_zvertex_short->Fit(f_zvtx, "RNQ");
-
-    // Report z-vertex mean and width
-    Double_t mean = f_zvtx->GetParameter(1);
-    Double_t rms = f_zvtx->GetParameter(2);
-    // we should do a check of a good fit here (skip for now)
-
-    std::ostringstream msg;
-    msg << "MBD zvertex mean/width: " << mean << " " << rms;
-    se->send_message(this, MSG_SOURCE_BBC, MSG_SEV_INFORMATIONAL, msg.str(), 1);
-    std::cout << "MBD zvtx mean/width: " << mean << " " << rms << std::endl;
-
-    if ( useGL1==1 && GetSendFlag() == 1 )
-    {
-      TString cmd = "/home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zMeanM "; cmd += mean;
-      cmd += "; /home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zRmsM "; cmd += rms;
-      gSystem->Exec( cmd );
-    }
-    else
-    {
-      // Set to 0 if we aren't sending
-      /*
-      TString retval = gSystem->GetFromPipe( "/home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -g sphenix.detector zRmsM" );
-      std::cout << "retval " << retval << std::endl;
-      if ( retval != "0" )
+      f_zvtx->SetRange(-75., 75.);
+      f_zvtx->SetParameters(250, 0., 10);
       {
-        TString cmd = "/home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zMeanM 0";
-        cmd += "; /home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zRmsM 0";
-        gSystem->Exec( cmd );
-      }
-      */
-    }
+        bbc_zvertex_short->Fit(f_zvtx, "RNQ");
 
-    bbc_zvertex_short->Reset();
+        // Report z-vertex mean and width
+        Double_t mean = f_zvtx->GetParameter(1);
+        Double_t rms = f_zvtx->GetParameter(2);
+        // we should do a check of a good fit here (skip for now)
+
+        std::ostringstream msg;
+        msg << "MBD zvertex mean/width: " << mean << " " << rms;
+        se->send_message(this, MSG_SOURCE_BBC, MSG_SEV_INFORMATIONAL, msg.str(), 1);
+        std::cout << "MBD zvtx mean/width: " << mean << " " << rms << std::endl;
+
+        if ( useGL1==1 && GetSendFlag() == 1 )
+        {
+          TString cmd = "/home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zMeanM "; cmd += mean;
+          cmd += "; /home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zRmsM "; cmd += rms;
+          gSystem->Exec( cmd );
+        }
+        else
+        {
+            // Set to 0 if we aren't sending
+            /*
+               TString retval = gSystem->GetFromPipe( "/home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -g sphenix.detector zRmsM" );
+               std::cout << "retval " << retval << std::endl;
+               if ( retval != "0" )
+               {
+               TString cmd = "/home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zMeanM 0";
+               cmd += "; /home/phnxrc/mbd/chiu/mbd_operations/httpRequestDemo.py -s sphenix.detector zRmsM 0";
+               gSystem->Exec( cmd );
+               }
+               */
+        }
+
+      }
+      bbc_zvertex_short->Reset();
   }
 
   for (int ipmt = 0; ipmt < 128; ipmt++)
   {
-    float q = m_mbdpmts->get_pmt(ipmt)->get_q();
-    bbc_adc->Fill(ipmt, q);
+      float q = m_mbdpmts->get_pmt(ipmt)->get_q();
+      bbc_adc->Fill(ipmt, q);
 
-    // std::cout << f_evt << "\tipmt " << ipmt << "\t" << q << "\t";
-    if (q > 0.5)
-    {
-      float tt = m_mbdpmts->get_pmt(ipmt)->get_time();
-      if (ipmt < 64)
+      // std::cout << f_evt << "\tipmt " << ipmt << "\t" << q << "\t";
+      if (q > 0.5)
       {
-        bbc_south_hittime->Fill(tt);
-      }
-      else
-      {
-        bbc_north_hittime->Fill(tt);
-      }
+          float tt = m_mbdpmts->get_pmt(ipmt)->get_time();
+          if (ipmt < 64)
+          {
+              bbc_south_hittime->Fill(tt);
+          }
+          else
+          {
+              bbc_north_hittime->Fill(tt);
+          }
 
-      // std::cout << tq;
-    }
-    // std::cout << std::endl;
+          // std::cout << tq;
+      }
+      // std::cout << std::endl;
   }
 
   // charge
@@ -1066,46 +1121,46 @@ int BbcMon::process_event(Event *evt)
   // raw waveforms
   for (int ipmt = 0; ipmt < 128; ipmt++)
   {
-    int tch = (ipmt / 8) * 16 + ipmt % 8;
-    MbdSig *bbcsig = bevt->GetSig(tch);
-    TGraphErrors *gwave = bbcsig->GetGraph();
-    Int_t n = gwave->GetN();
-    Double_t *x = gwave->GetX();
-    Double_t *y = gwave->GetY();
-    for (int isamp = 0; isamp < n; isamp++)
-    {
-      bbc_time_wave->Fill(x[isamp], ipmt, y[isamp]);
-    }
+      int tch = (ipmt / 8) * 16 + ipmt % 8;
+      MbdSig *bbcsig = bevt->GetSig(tch);
+      TGraphErrors *gwave = bbcsig->GetGraph();
+      Int_t n = gwave->GetN();
+      Double_t *x = gwave->GetX();
+      Double_t *y = gwave->GetY();
+      for (int isamp = 0; isamp < n; isamp++)
+      {
+          bbc_time_wave->Fill(x[isamp], ipmt, y[isamp]);
+      }
 
-    int qch = tch + 8;
-    bbcsig = bevt->GetSig(qch);
-    gwave = bbcsig->GetGraph();
-    n = gwave->GetN();
-    x = gwave->GetX();
-    y = gwave->GetY();
-    for (int isamp = 0; isamp < n; isamp++)
-    {
-      bbc_charge_wave->Fill(x[isamp], ipmt, y[isamp]);
-    }
+      int qch = tch + 8;
+      bbcsig = bevt->GetSig(qch);
+      gwave = bbcsig->GetGraph();
+      n = gwave->GetN();
+      x = gwave->GetX();
+      y = gwave->GetY();
+      for (int isamp = 0; isamp < n; isamp++)
+      {
+          bbc_charge_wave->Fill(x[isamp], ipmt, y[isamp]);
+      }
 
-    // hit map
-    float q = m_mbdpmts->get_pmt(ipmt)->get_q();
+      // hit map
+      float q = m_mbdpmts->get_pmt(ipmt)->get_q();
 
-    if ( q>0. )
-    {
-        float xcent = _mbdgeom->get_x(ipmt);
-        float ycent = _mbdgeom->get_y(ipmt);
-        int arm = _mbdgeom->get_arm(ipmt);
-        //std::cout << "q " << arm << "\t" << q << std::endl;
-        if (arm == 0)
-        {
-            bbc_south_hitmap->Fill(xcent, ycent, q);
-        }
-        else if (arm == 1)
-        {
-            bbc_north_hitmap->Fill(xcent, ycent, q);
-        }
-    }
+      if ( q>0. )
+      {
+          float xcent = _mbdgeom->get_x(ipmt);
+          float ycent = _mbdgeom->get_y(ipmt);
+          int arm = _mbdgeom->get_arm(ipmt);
+          //std::cout << "q " << arm << "\t" << q << std::endl;
+          if (arm == 0)
+          {
+              bbc_south_hitmap->Fill(xcent, ycent, q);
+          }
+          else if (arm == 1)
+          {
+              bbc_north_hitmap->Fill(xcent, ycent, q);
+          }
+      }
   }
 
   return 0;
@@ -1113,67 +1168,67 @@ int BbcMon::process_event(Event *evt)
 
 int BbcMon::Reset()
 {
-  // reset our internal counters
-  evtcnt = 0;
-  // idummy = 0;
+    // reset our internal counters
+    evtcnt = 0;
+    // idummy = 0;
 
-  bbc_south_nhit->Reset();
-  bbc_north_nhit->Reset();
-  for (int iarm=0; iarm<2; iarm++)
-  {
-    bbc_nhit_emcal[iarm]->Reset();
-    bbc_nhit_hcal[iarm]->Reset();
-    bbc_nhit_emcalmbd[iarm]->Reset();
-    bbc_nhit_hcalmbd[iarm]->Reset();
-  }
-  bbc_adc->Reset();
-  bbc_tdc->Reset();
-  bbc_tdc_overflow->Reset();
-  bbc_tdc_armhittime->Reset();
-  bbc_nevent_counter->Reset();
-  bbc_zvertex->Reset();
-  bbc_zvertex_short->Reset();
-  bbc_zvertex_ns->Reset();
-  bbc_zvertex_10->Reset();
-  bbc_zvertex_30->Reset();
-  bbc_zvertex_60->Reset();
-  bbc_zvertex_10_chk->Reset();
-  bbc_zvertex_30_chk->Reset();
-  bbc_zvertex_60_chk->Reset();
-  bbc_zvertex_zdcns->Reset();
-  bbc_zvertex_emcal->Reset();
-  bbc_zvertex_hcal->Reset();
-  bbc_zvertex_emcalmbd->Reset();
-  bbc_zvertex_hcalmbd->Reset();
-  bbc_tzero_zvtx->Reset();
-  bbc_avr_hittime->Reset();
-  bbc_south_hittime->Reset();
-  bbc_north_hittime->Reset();
-  bbc_south_chargesum->Reset();
-  bbc_north_chargesum->Reset();
-  bbc_prescale_hist->Reset();
-  bbc_time_wave->Reset();
-  bbc_charge_wave->Reset();
+    bbc_south_nhit->Reset();
+    bbc_north_nhit->Reset();
+    for (int iarm=0; iarm<2; iarm++)
+    {
+        bbc_nhit_emcal[iarm]->Reset();
+        bbc_nhit_hcal[iarm]->Reset();
+        bbc_nhit_emcalmbd[iarm]->Reset();
+        bbc_nhit_hcalmbd[iarm]->Reset();
+    }
+    bbc_adc->Reset();
+    bbc_tdc->Reset();
+    bbc_tdc_overflow->Reset();
+    bbc_tdc_armhittime->Reset();
+    bbc_nevent_counter->Reset();
+    bbc_zvertex->Reset();
+    bbc_zvertex_short->Reset();
+    bbc_zvertex_ns->Reset();
+    bbc_zvertex_10->Reset();
+    bbc_zvertex_30->Reset();
+    bbc_zvertex_60->Reset();
+    bbc_zvertex_10_chk->Reset();
+    bbc_zvertex_30_chk->Reset();
+    bbc_zvertex_60_chk->Reset();
+    bbc_zvertex_zdcns->Reset();
+    bbc_zvertex_emcal->Reset();
+    bbc_zvertex_hcal->Reset();
+    bbc_zvertex_emcalmbd->Reset();
+    bbc_zvertex_hcalmbd->Reset();
+    bbc_tzero_zvtx->Reset();
+    bbc_avr_hittime->Reset();
+    bbc_south_hittime->Reset();
+    bbc_north_hittime->Reset();
+    bbc_south_chargesum->Reset();
+    bbc_north_chargesum->Reset();
+    bbc_prescale_hist->Reset();
+    bbc_time_wave->Reset();
+    bbc_charge_wave->Reset();
 
-  return 0;
+    return 0;
 }
 
 int BbcMon::DBVarInit()
 {
-  // variable names are not case sensitive
-  /*
-  std::string varname;
-  varname = "bbcmoncount";
-  dbvars->registerVar(varname);
-  varname = "bbcmondummy";
-  dbvars->registerVar(varname);
-  varname = "bbcmonnew";
-  dbvars->registerVar(varname);
-  if (verbosity > 0)
-  {
-    dbvars->Print();
-  }
-  dbvars->DBInit();
-  */
-  return 0;
+    // variable names are not case sensitive
+    /*
+       std::string varname;
+       varname = "bbcmoncount";
+       dbvars->registerVar(varname);
+       varname = "bbcmondummy";
+       dbvars->registerVar(varname);
+       varname = "bbcmonnew";
+       dbvars->registerVar(varname);
+       if (verbosity > 0)
+       {
+       dbvars->Print();
+       }
+       dbvars->DBInit();
+       */
+    return 0;
 }

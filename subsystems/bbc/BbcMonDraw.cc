@@ -1628,9 +1628,13 @@ int BbcMonDraw::Draw(const std::string &what)
     // std::cout << "the ratio of integral (-30cm < ZVertex < 30cm) between BBLL1 without vtx cut and ZDC : " << bbc_count_novtx / zdc_count << std::endl ;
     // std::cout << "the ratio of integral (-30cm < ZVertex < 30cm) between BBLL1 without vtx cut  and BBLL1 with BBCZ < |30cm|  : " << bbc_count_novtx/bbc_count << std::endl ;
 
+    // Get the Trigger Name that is used
+    GetMinBiasTrigName();
+
     // Draw ZVertex triggerd variable trigger
     Zvtx->SetMaximum(maxEntries * 1.05);
-    Zvtx->SetTitle("MBD ZVertex (south<-->north)");
+    TString title = "MBD ZVertex (TRIG = "; title += TrigName; title += ")";
+    Zvtx->SetTitle( title );
     // PadZVertex->DrawFrame(-160,0,160,maxEntries*1.05,"Bbc ZVertex (south<-->north)");
     // std::cout << "maxEntries " << maxEntries << std::endl;
     // Zvtx->Draw("hist");
@@ -2072,6 +2076,14 @@ int BbcMonDraw::Draw(const std::string &what)
       SouthHitTime->Fit("FitSouthHitTime", "QRL");
       FitSouthHitTime->Draw("same");
 
+      PadSouthHitTime->Update();
+      TLine aline;
+      aline.SetLineStyle(7);
+      aline.SetLineColor(kRed);
+      aline.SetLineWidth(4);
+      aline.DrawLine(-5.0, gPad->GetFrame()->GetY1(), -5.0, gPad->GetFrame()->GetY2());
+      aline.DrawLine(+5.0, gPad->GetFrame()->GetY1(), +5.0, gPad->GetFrame()->GetY2());
+
       /*
       // Lines to indicate good mean
       float height = SouthHitTime->GetMaximum();
@@ -2091,6 +2103,7 @@ int BbcMonDraw::Draw(const std::string &what)
     {
       PadNorthHitTime->cd();
       NorthHitTime->Draw();
+
       float rangemin;
       float rangemax;
       int npeak = tspec->Search(NorthHitTime, 5, "goff",0.2);  // finds the highest peak, draws marker
@@ -2124,6 +2137,14 @@ int BbcMonDraw::Draw(const std::string &what)
       FitNorthHitTime->SetRange(rangemin, rangemax);
       NorthHitTime->Fit("FitNorthHitTime", "QRL");
       FitNorthHitTime->Draw("same");
+
+      PadNorthHitTime->Update();
+      TLine aline;
+      aline.SetLineStyle(7);
+      aline.SetLineColor(kRed);
+      aline.SetLineWidth(4);
+      aline.DrawLine(-5.0 ,gPad->GetFrame()->GetY1(),-5.0,gPad->GetFrame()->GetY2());
+      aline.DrawLine(+5.0,gPad->GetFrame()->GetY1(),+5.0,gPad->GetFrame()->GetY2());
 
       /*
       // Lines to indicate good mean
@@ -3074,3 +3095,31 @@ int BbcMonDraw::DrawDeadServer(TPad *transparent_pad)
   transparent_pad->Update();
   return 0;
 }
+
+void BbcMonDraw::GetMinBiasTrigName()
+{
+
+  const char *trignames[] = {
+      "MBDNS>=1",
+      "MBDNS>=2",
+      "MBDNS |z|<10",
+      "MBDNS |z|<30",
+      "MBDNS |z|<60"
+  };
+
+  // look for MB triggers, in order (bits 10-14)
+  for (int ibit=10; ibit<=14; ibit++)
+  {
+    double prescale = Prescale_hist->GetBinContent(ibit+1);
+    if ( prescale >= 0 )
+    {
+        TrigName = trignames[ibit-10];
+        return;
+    }
+  }
+  // maybe here we could fall back to a coincidence with an MBD trigger?
+
+  // no mb bit found, take all triggers
+  TrigName = "ALL TRIGGERS";
+}
+

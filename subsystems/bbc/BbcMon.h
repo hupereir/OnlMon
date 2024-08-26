@@ -33,6 +33,7 @@ class BbcMon : public OnlMon
   int Reset() override;
 
   void set_GL1(const int g) { useGL1 = g; }
+  void set_skipto(const int s) { skipto = s; }
 
  protected:
   int DBVarInit();
@@ -57,9 +58,13 @@ class BbcMon : public OnlMon
   uint64_t hcal{0};           // all hcal triggers, no bbc
   uint64_t emcalmbd{0};       // all emcal triggers, with bbc
   uint64_t hcalmbd{0};        // all hcal triggers, with bbc
+  uint64_t orig_trigmask{0};  // store for recovering from runs with one trigger defined
   eventReceiverClient *erc{nullptr};
+  int      skipto{0};
   //GL1Manager *gl1mgr{nullptr};
   RunDBodbc *rdb{nullptr};
+
+  uint64_t GetMinBiasTrigBit(uint64_t trigs_enabled);
 
   int evtcnt{0};
   // OnlMonDB *dbvars = nullptr;

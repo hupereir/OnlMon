@@ -14,6 +14,7 @@
 #include <TText.h>
 #include <TMath.h>
 #include <TPaveLabel.h>
+#include <TPaveText.h>
 #include <TStyle.h>
 #include <TString.h>
 #include <TLegend.h>
@@ -426,6 +427,16 @@ int TpcMonDraw::MakeCanvas(const std::string &name)
     transparent[33]->Draw();
     TC[33]->SetEditable(false);
   }     
+  else if (name == "ShifterTPCDriftWindow")
+  {
+    TC[34] = new TCanvas(name.c_str(), "TPC Drift Window for Shifter Checks",-1, 0, xsize , ysize );
+    gSystem->ProcessEvents();
+    TC[34]->Divide(4,7);
+    transparent[34] = new TPad("transparent34", "this does not show", 0, 0, 1, 1);
+    transparent[34]->SetFillStyle(4000);
+    transparent[34]->Draw();
+    TC[34]->SetEditable(false);
+  }     
   return 0;
 }
 
@@ -601,6 +612,11 @@ int TpcMonDraw::Draw(const std::string &what)
   if (what == "ALL" || what == "TPCPACKETYPEFRACTION")
   {
     iret +=  DrawTPCPacketTypes(what);
+    idraw++;
+  }
+  if (what == "ALL" || what == "SHIFTER_DRIFT_PLOT")
+  {
+    iret += DrawShifterTPCDriftWindow(what);
     idraw++;
   }
   if (!idraw)
@@ -3218,13 +3234,19 @@ int TpcMonDraw::DrawTPCDriftWindow(const std::string & /* what */)
 
     int min = std::numeric_limits<int>::max(); // start wih the largest possible value
     int max = std::numeric_limits<int>::min(); // start with smalles possible value
+    int no_laser_max =  std::numeric_limits<int>::min(); // start with smalles possible value
+
+    bool no_laser_window = 0;
     
     for( int j = 2; j>-1; j-- )
     {
       if( tpcmon_DriftWindow[i][j] )
       {
-        for( int k = 1; k < tpcmon_DriftWindow[i][j]->GetEntries(); k++ )
+        for( int k = 1; k < tpcmon_DriftWindow[i][j]->GetNbinsX(); k++ )
 	{
+          if( (k>=0 && k<=390) || (k>420) ){ no_laser_window = 1;}
+          if( k>390 && k<=420){ no_laser_window = 0;}
+          if( (tpcmon_DriftWindow[i][j]->GetBinContent(k) > no_laser_max && tpcmon_DriftWindow[i][j]->GetBinContent(k) > 0) && (no_laser_window==1) ){no_laser_max = tpcmon_DriftWindow[i][j]->GetBinContent(k);}
           if( tpcmon_DriftWindow[i][j]->GetBinContent(k) > max && tpcmon_DriftWindow[i][j]->GetBinContent(k) > 0 ){max = tpcmon_DriftWindow[i][j]->GetBinContent(k);}
           if( tpcmon_DriftWindow[i][j]->GetBinContent(k) < min && tpcmon_DriftWindow[i][j]->GetBinContent(k) > 0 ){min = tpcmon_DriftWindow[i][j]->GetBinContent(k);}
 	}
@@ -3236,7 +3258,7 @@ int TpcMonDraw::DrawTPCDriftWindow(const std::string & /* what */)
     {
       if( tpcmon_DriftWindow[i][l] )
       {
-        if(l == 2){tpcmon_DriftWindow[i][l]->GetYaxis()->SetRangeUser(0.9*min,1.1*max);tpcmon_DriftWindow[i][l] -> DrawCopy("HIST");}
+        if(l == 2){tpcmon_DriftWindow[i][l]->GetYaxis()->SetRangeUser(0.9*min,1.1*max);tpcmon_DriftWindow[i][l] -> DrawCopy("HIST");} //used to be 
         else      {tpcmon_DriftWindow[i][l]->GetYaxis()->SetRangeUser(0.9*min,1.1*max);tpcmon_DriftWindow[i][l] -> DrawCopy("HISTsame");} //assumes that R3 will always exist and is most entries
       }
     }
@@ -3814,6 +3836,198 @@ int TpcMonDraw::DrawTPCParity(const std::string & /* what */)
   MyTC->Show();
   MyTC->SetEditable(false);
 
+
+  return 0;
+}
+                
+int TpcMonDraw::DrawShifterTPCDriftWindow(const std::string & /* what */)
+{
+  OnlMonClient *cl = OnlMonClient::instance();
+
+  TH1 *tpcmon_DriftWindow_shifter[24][3] = {nullptr};
+
+  char TPCMON_STR[100];
+  for( int i=0; i<24; i++ ) 
+  {
+    for( int j=0; j<3; j++ )
+    {
+      //const TString TPCMON_STR( Form( "TPCMON_%i", i ) );
+      sprintf(TPCMON_STR,"TPCMON_%i",i);
+      tpcmon_DriftWindow_shifter[i][0] = (TH1*) cl->getHisto(TPCMON_STR,"COUNTS_vs_SAMPLE_1D_R1");
+      tpcmon_DriftWindow_shifter[i][1] = (TH1*) cl->getHisto(TPCMON_STR,"COUNTS_vs_SAMPLE_1D_R2");
+      tpcmon_DriftWindow_shifter[i][2] = (TH1*) cl->getHisto(TPCMON_STR,"COUNTS_vs_SAMPLE_1D_R3");
+    }
+  }
+
+  // also get # of events that made it into each OnlMon Server
+  TH1 *tpcmoneventsebdc[24] = {nullptr}; 
+
+  char TPCMON_STR2[100];
+  for( int i=0; i<24; i++ ) 
+  {
+    //const TString TPCMON_STR( Form( "TPCMON_%i", i ) );
+    sprintf(TPCMON_STR2,"TPCMON_%i",i);
+    tpcmoneventsebdc[i] = (TH1*) cl->getHisto(TPCMON_STR2,"NEvents_vs_EBDC");
+  }
+  
+  if (!gROOT->FindObject("ShifterTPCDriftWindow"))
+  {
+    MakeCanvas("ShifterTPCDriftWindow");
+  }
+
+  TCanvas *MyTC = TC[34];
+  TPad *TransparentTPad = transparent[34];
+  MyTC->SetEditable(true);
+  MyTC->Clear("D");
+
+  gStyle->SetOptStat(0);
+  gStyle->SetPalette(57); //kBird CVD friendly
+
+  auto legend = new TLegend(0.7,0.65,0.98,0.95);
+  bool draw_leg = 0;
+
+  char bad_message[128];
+
+  TLine *t2 = new TLine(); t2->SetLineStyle(2);
+  TPaveText *messages[24];  
+
+  for( int i=0; i<24; i++ )
+  {
+    MyTC->cd(i+5);
+
+    int min = std::numeric_limits<int>::max(); // start wih the largest possible value
+    int max = std::numeric_limits<int>::min(); // start with smalles possible value
+    
+    int R1_max = std::numeric_limits<int>::min(); // start with smalles possible value
+    int R2_max = std::numeric_limits<int>::min(); // start with smalles possible value
+    int R3_max = std::numeric_limits<int>::min(); // start with smalles possible value
+
+    bool R1_bad = 0;
+    bool R2_bad = 0;
+    bool R3_bad = 0;
+
+    for( int j = 2; j>-1; j-- )
+    {
+      if( tpcmon_DriftWindow_shifter[i][j] )
+      {
+        for( int k = 1; k < tpcmon_DriftWindow_shifter[i][j]->GetNbinsX(); k++ )
+	{
+          //if(j == 2 &&  (tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > R3_max && tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > 0) ){ R3_max = k; }
+          //if(j == 1 &&  (tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > R2_max && tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > 0) ){ R2_max = k; }
+          //if(j == 0 &&  (tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > R1_max && tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > 0) ){ R1_max = k; }
+          //std::cout<<"In Progress: "<<"R1_max = "<<R1_max<<" R2_max = "<<R2_max<<" R3_max = "<<R3_max<<std::endl;
+          if( tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > max && tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > 0 ){max = tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k);}
+          if( tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) < min && tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k) > 0 ){min = tpcmon_DriftWindow_shifter[i][j]->GetBinContent(k);}
+	}
+      }
+    }
+
+
+    if( tpcmon_DriftWindow_shifter[i][0] ){  R1_max = tpcmon_DriftWindow_shifter[i][0]->GetBinCenter(tpcmon_DriftWindow_shifter[i][0]->GetMaximumBin());}
+    if( tpcmon_DriftWindow_shifter[i][1] ){  R2_max = tpcmon_DriftWindow_shifter[i][1]->GetBinCenter(tpcmon_DriftWindow_shifter[i][1]->GetMaximumBin());}
+    if( tpcmon_DriftWindow_shifter[i][2] ){  R3_max = tpcmon_DriftWindow_shifter[i][2]->GetBinCenter(tpcmon_DriftWindow_shifter[i][2]->GetMaximumBin());}
+
+    if( (R1_max>std::numeric_limits<int>::min() && (R1_max < 413)) || R1_max > 423 ){ R1_bad = 1;} 
+    if( (R2_max>std::numeric_limits<int>::min() && (R2_max < 413)) || R2_max > 423 ){ R2_bad = 1;} 
+    if( (R3_max>std::numeric_limits<int>::min() && (R3_max < 413)) || R3_max > 423 ){ R3_bad = 1;}
+
+    for( int l = 2; l>-1; l-- )
+    {
+      if( tpcmon_DriftWindow_shifter[i][l] )
+      {
+        tpcmon_DriftWindow_shifter[i][l]->GetXaxis()->SetRangeUser(390,440);
+        if(l == 2)
+        { 
+          tpcmon_DriftWindow_shifter[i][l]->GetYaxis()->SetRangeUser(0.9*min,1.3*max);tpcmon_DriftWindow_shifter[i][l] -> DrawCopy("HIST");
+        } //used to be 
+        else      
+        { 
+          tpcmon_DriftWindow_shifter[i][l]->GetYaxis()->SetRangeUser(0.9*min,1.3*max); tpcmon_DriftWindow_shifter[i][l] -> DrawCopy("HISTsame");
+        } //assumes that R3 will always exist and is most entries
+      }
+    }
+
+    t2->DrawLine(413,0.9*min,413,1.3*max);
+    t2->DrawLine(423,0.9*min,423,1.3*max);
+    
+    gPad->Update();  
+
+    if(draw_leg == 0 && tpcmon_DriftWindow_shifter[i][0] && tpcmon_DriftWindow_shifter[i][1] && tpcmon_DriftWindow_shifter[i][2]) //if you have not drawn the legend yet, draw it BUT ONLY ONCE
+    {
+      legend->AddEntry(tpcmon_DriftWindow_shifter[i][0], "R1");
+      legend->AddEntry(tpcmon_DriftWindow_shifter[i][1], "R2");
+      legend->AddEntry(tpcmon_DriftWindow_shifter[i][2], "R3");
+      MyTC->cd(i+5);
+      legend->Draw();
+      draw_leg = 1; //draw legend only once
+    }
+
+    //std::cout<<"R1_max = "<<R1_max<<" R2_max = "<<R2_max<<" R3_max = "<<R3_max<<std::endl;
+    //messages->Clear();
+    messages[i] = new TPaveText(0.1,0.5,0.4,0.9,"brNDC");  
+    
+    if( (i == 21 || i == 22) || (i == 23) )
+    {
+      messages[i]->AddText("SECTOR NOT MONITORED"); ((TText*)messages[i]->GetListOfLines()->Last())->SetTextColor(kBlack);
+      MyTC->cd(i+5);
+      messages[i]->Draw("same");      
+    }
+    else if( tpcmoneventsebdc[i] )
+    {
+      if(tpcmoneventsebdc[i]->GetEntries() <  8000)
+      {
+        messages[i]->AddText("NOT ENOUGH STATS"); ((TText*)messages[i]->GetListOfLines()->Last())->SetTextColor(kBlue);
+        messages[i]->AddText("CHECK AGAIN"); ((TText*)messages[i]->GetListOfLines()->Last())->SetTextColor(kBlue);
+        MyTC->cd(i+5);
+        messages[i]->Draw("same");
+      }
+    }
+    else if(  (R1_bad==1 || R2_bad==1) || R3_bad==1 )
+    {
+      //std::cout<<"made it into the if statement for bad timing"<<std::endl;
+      sprintf(bad_message,"Sector %i BAD",i);
+      messages[i]->SetFillColor(kRed);
+      messages[i]->AddText(bad_message); ((TText*)messages[i]->GetListOfLines()->Last())->SetTextColor(kBlack);
+      messages[i]->AddText("REFRESH. IF PERSISTS, CALL EXPERT"); ((TText*)messages[i]->GetListOfLines()->Last())->SetTextColor(kBlack);
+      MyTC->cd(i+5);
+      messages[i]->Draw("same");
+    }
+    else if( tpcmon_DriftWindow_shifter[i][0] && (tpcmon_DriftWindow_shifter[i][1] && tpcmon_DriftWindow_shifter[i][2]) )
+    {
+      messages[i]->SetFillColor(kGreen);
+      messages[i]->AddText("ALL GOOD"); ((TText*)messages[i]->GetListOfLines()->Last())->SetTextColor(kBlack);
+      MyTC->cd(i+5);
+      messages[i]->Draw("same");
+    }
+    else
+    {
+      messages[i]->AddText("MISSING DATA"); ((TText*)messages[i]->GetListOfLines()->Last())->SetTextColor(kBlack);
+      MyTC->cd(i+5);
+      messages[i]->Draw("same");
+    }
+    
+
+  }// finish looping over 24 sectors
+
+  TText PrintRun;
+  PrintRun.SetTextFont(62);
+  PrintRun.SetTextSize(0.04);
+  PrintRun.SetNDC();          // set to normalized coordinates
+  PrintRun.SetTextAlign(23);  // center/top alignment
+  std::ostringstream runnostream;
+  std::string runstring;
+  std::pair<time_t,int> evttime = cl->EventTime("CURRENT");
+  // fill run number and event time into string
+  runnostream << ThisName << "_Shifter_Drift Window, ADC-Pedestal>(5sigma||20ADC) Run " << cl->RunNumber()
+              << ", Time: " << ctime(&evttime.first);
+  runstring = runnostream.str();
+  TransparentTPad->cd();
+  PrintRun.SetTextColor(evttime.second);
+  PrintRun.DrawText(0.5, 0.91, runstring.c_str());
+
+  MyTC->Update();
+  MyTC->Show();
+  MyTC->SetEditable(false);
 
   return 0;
 }

@@ -85,10 +85,10 @@ void StartPoms()
 
   subsys = new SubSystem("INTT", "intt");
   subsys->AddAction("inttDraw(\"chip_hitmap\")", "Chip Hitmap");
-  subsys->AddAction("inttDraw(\"bco_diff\")", "BCO Diff");
-  subsys->AddAction("inttDraw(\"zoomed_fphx_bco\")", "Zoomed Fphx BCO");
+  subsys->AddAction("inttDraw(\"bco_diff\")", "BCO Diff (Triggered)");
+  subsys->AddAction("inttDraw(\"zoomed_fphx_bco\")", "Zoomed Fphx BCO (Streaming)");
   subsys->AddAction("inttDraw(\"history\")", "Decoding Rate");
-  subsys->AddAction("inttDraw(\"fphx_bco\")", "Fphx BCO [Expert]");
+  subsys->AddAction("inttDraw(\"fphx_bco\")", "Fphx BCO (Streaming) [Expert]");
   subsys->AddAction("inttDraw(\"hitrates\")", "Hitrates [Expert]");
   subsys->AddAction("inttDraw(\"SERVERSTATS\")", "Server Stats");
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
@@ -131,7 +131,7 @@ void StartPoms()
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
 
-  subsys = new SubSystem("TPC", "tpc");
+  subsys = new SubSystem("TPC EXPERT", "tpc");
   subsys->AddAction("tpcDraw(\"TPCMODULE\")", "TPC SUM[ADC]");
   subsys->AddAction("tpcDraw(\"TPCSAMPLESIZE\")", "TPC Sample Size");
   subsys->AddAction("tpcDraw(\"TPCCHECKSUMERROR\")", "TPC Checksum Error Prob.");
@@ -167,6 +167,15 @@ void StartPoms()
   subsys->AddAction(new SubSystemActionSavePlot(subsys));
   pmf->RegisterSubSystem(subsys);
 
+  subsys = new SubSystem("TPC SHIFTER", "tpc");
+  subsys->AddAction("tpcDraw(\"SHIFTER_DRIFT_PLOT\")", "SHIFTER TPC DRIFT");
+  subsys->AddAction("tpcDraw(\"TPCCLUSTERSXYWEIGTHED\")", "SHIFTER TPC ACCEPTANCE");
+  subsys->AddAction("tpcDraw(\"TPCCHANSPERLVL1NS\")", "SHIFTER TPC NS OCCUP.");
+  subsys->AddAction("tpcDraw(\"TPCCHANSPERLVL1SS\")", "SHIFTER TPC SS OCCUP.");
+  subsys->AddAction("tpcDraw(\"SERVERSTATS\")", "Server Stats");
+  subsys->AddAction(new SubSystemActionSavePlot(subsys));
+  pmf->RegisterSubSystem(subsys);
+  
   subsys = new SubSystem("TPOT", "tpot");
   subsys->AddAction("tpotDraw(\"TPOT_counts_vs_sample\")", "Counts vs Sample");
   subsys->AddAction("tpotDraw(\"TPOT_hit_charge\")", "Hit Charge");

@@ -70,6 +70,7 @@ class CemcMonDraw : public OnlMonDraw
   // TProfile *AllProfiles[256][96]{{nullptr}};
   TH2 *h2_template_hit{nullptr};
   TH2 *h_cemc_datahits{nullptr};
+  TH2 *h2_template_hit_alltrig{nullptr};
   TStyle *cemcStyle{nullptr};
 
   TH1 *h1_zs {nullptr};
@@ -92,6 +93,8 @@ class CemcMonDraw : public OnlMonDraw
       ZSPalette[i] = FI + i;
     }
   }
+  //know hot channels (4,24)
+  std::set<std::pair<int, int>> hotChannels =  {{4, 24}, {4, 56}, {83, 179}, {51, 253}};
 };
 
 #endif /* CEMC_CEMCMONDRAW_H */
